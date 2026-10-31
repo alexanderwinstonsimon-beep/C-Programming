@@ -30,11 +30,11 @@ int main(){
                 break;
             case 4: 
                 printf("\nExiting the program.\n"); 
-                break;  // ✔ Exit directly
+                break;
             default: 
                 printf("\nInvalid choice! Please try again.\n");
         }
-    } while (choice != 4);   // ✔ Keep looping until explicitly return
+    } while (choice != 4);
     return 0;
 }
 
@@ -59,20 +59,60 @@ int bookClass(){
                 break;
             case 5:
                 printf("\nReturning to main menu.\n");
-                break;   // ✔ Return to main directly, do not recurse
+                break;
             default:
                 printf("\nInvalid choice! Please try again.\n");
         }
-    } while (choice != 5);   // ✔ Loop until user selects 5
-    return 0;  // ✔ Return to main menu after valid selection
+    } while (choice != 5);
+    return 0;
 }
 
 int payment(){
-    printf("\nPayment management is under construction.\n");
-    return 0;  // ✔ Return to main menu after displaying message
+    int choice;
+
+    do {
+        printf("\nPayment Management");
+        printf("\n---------------------------------");
+        printf("\n1. Make Payment\n2. View Payment History\n3. Back\n");
+
+        printf("\nEnter choice: ");
+        scanf("%d", &choice);
+        switch(choice){
+            case 1: 
+                break;
+            case 2: 
+                break;
+            case 3: 
+                printf("\nReturning to main menu.\n");
+                break;
+            default:
+                printf("\nInvalid choice! Please try again.\n");
+        }
+    } while (choice != 3);
+    return 0;
 }
 
 int rating(){
-    printf("\nInstructor rating is under construction.\n");
-    return 0;  // ✔ Return to main menu after displaying message
+    int choice;
+
+    do {
+        printf("\nInstructor Rating");
+        printf("\n---------------------------------");
+        printf("\n1. Rate Instructors\n2. View Ratings\n3. Back\n");
+
+        printf("\nEnter choice: ");
+        scanf("%d", &choice);
+        switch(choice){
+            case 1: 
+                break;
+            case 2: 
+                break;
+            case 3: 
+                printf("\nReturning to main menu.\n");
+                break;
+            default:
+                printf("\nInvalid choice! Please try again.\n");
+        }
+    } while (choice != 3);
+    return 0;
 }
