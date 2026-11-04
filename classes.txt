@@ -1,0 +1,5 @@
+1|Mathematics|Dr. Tan|Mon 10:00|-
+2|Physics|Dr. Lim|Tue 14:00|S001
+3|Programming|Ms. Wong|Wed 09:00|-
+4|English|Mr. Ahmad|Thu 11:00|S001
+5|Chemistry|Dr. Lee|Fri 15:00|-
