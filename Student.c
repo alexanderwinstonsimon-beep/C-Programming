@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "std.h"
+#include "Student.h"
 #include "main.h"
 #define MAX 50
 
