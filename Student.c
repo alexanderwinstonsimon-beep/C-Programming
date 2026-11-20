@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-
+#include "std.h"
+#include "main.h"
 #define MAX 50
 
 #define STUDENT_FILE "students.txt"
@@ -163,7 +164,7 @@ int showBookedClasses(){
 }
 
 //main menu
-int main(){
+int studentMenu(){
     int choice;
 
     if (!loadStudents()){
