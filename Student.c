@@ -13,6 +13,9 @@ char stuId[MAX][20];
 char stuUser[MAX][30];
 char stuPass[MAX][30];
 int  stuCount = 0;
+char stuName[MAX][50];
+char stuStatus[MAX][20];
+char stuContact[MAX][30];
 
 int  classId[MAX];
 char classSubject[MAX][50];
@@ -37,12 +40,37 @@ char currentStudentId[20] = "";
 
 int loadStudents(){
     FILE *fp = fopen(STUDENT_FILE, "r");
-    if (!fp) return 0;
+    char line[300];
+    char fields[6][100];
     stuCount = 0;
-    while (fscanf(fp, "%19[^|]|%29[^|]|%29[^\n]\n", stuId[stuCount], stuUser[stuCount], stuPass[stuCount]) == 3) {
+    if (!fp) return 0;
+    while (fgets(line, sizeof(line), fp) && stuCount < MAX) {
+        size_t n = strlen(line);
+        while (n && (line[n-1] == '\n' || line[n-1] == '\r')) line[--n] = '\0';
+        int count = 0;
+        char *start = line, *pipe;
+        while (count < 6) {
+            pipe = strchr(start, '|');
+            if (pipe) *pipe = '\0';
+            strcpy(fields[count++], start);
+            if (!pipe) break;
+            start = pipe + 1;
+        }
+        strcpy(stuId[stuCount], fields[0]);
+        if (count == 3) {
+            strcpy(stuName[stuCount], fields[1]);
+            strcpy(stuUser[stuCount], fields[1]);
+            strcpy(stuPass[stuCount], fields[2]);
+            strcpy(stuStatus[stuCount], "active");
+            strcpy(stuContact[stuCount], "");
+        } else {
+            strcpy(stuName[stuCount], count >= 2 ? fields[1] : "");
+            strcpy(stuUser[stuCount], count >= 3 ? fields[2] : "");
+            strcpy(stuPass[stuCount], count >= 4 ? fields[3] : "");
+            strcpy(stuStatus[stuCount], count >= 5 && fields[4][0] ? fields[4] : "active");
+            strcpy(stuContact[stuCount], count >= 6 ? fields[5] : "");
+        }
         stuCount++;
-        if (stuCount >= MAX) 
-            break;
     }
     fclose(fp);
     return 1;
@@ -127,6 +155,10 @@ int login(){
 
         for (int i = 0; i < stuCount; i++){
             if (strcmp(stuUser[i], user) == 0 && strcmp(stuPass[i], pass) == 0){
+                if (strcmp(stuStatus[i], "active") != 0){
+                    printf("\nThis student account is not active.\n");
+                    break;
+                }
                 strcpy(currentStudentId, stuId[i]);
                 printf("\nLogin successful. Welcome, %s (ID: %s)!\n", user, currentStudentId);
                 return 1;
@@ -253,10 +285,11 @@ int bookClass(){
                     printf("\nClass ID not found.\n");
                 else if (strcmp(classBookedBy[found], "-") != 0) 
                     printf("\nClass already booked!\n");
-                else
+                else {
                     strcpy(classBookedBy[found], currentStudentId);
                     saveClasses();
                     printf("\nClass '%s' booked successfully!\n", classSubject[found]);
+                }
                 
                 break;
             }
@@ -366,10 +399,11 @@ int bookClass(){
                     printf("\nClass ID not found.\n");
                 else if (strcmp(classBookedBy[idx], currentStudentId) != 0)
                     printf("\nThis class is not booked by you.\n");
-                else
+                else {
                     strcpy(classBookedBy[idx], "-");
                     saveClasses();
                     printf("\nClass '%s' cancelled.\n", classSubject[idx]);
+                }
                 break;
             }
             case 5:

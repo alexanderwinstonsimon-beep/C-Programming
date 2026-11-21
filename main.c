@@ -15,13 +15,14 @@ int main() {
         printf("=========================================\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
+        while (getchar() != '\n');
         
         switch (choice) {
             case 1:
                 printf("\n[Manager Menu module not active in this build.]\n");
                 break;
             case 2:
-                printf("\n[Administrator Menu module not active in this build.]\n");
+                administratorMenu();
                 break;
             case 3:
                 studentMenu();
