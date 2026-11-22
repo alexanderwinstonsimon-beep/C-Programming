@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "Facilities Officer.h"
 #include "main.h"
@@ -7,110 +8,108 @@ struct equipmentlist{
     int equipmentid;
     char equipmentname[50];
     int equipmentstock;
-}
+};
 
 struct facilityissues{
     int issueid;
     char issuedesc[150];
-    char status;
-}
+    char status[20];
+};
 
 struct reports{
     int id;
     int equipmenttype;
-    int equipmentstock;
-}
+    int totalstock;
+};
 
-//inventory management
+// inventory management
+
 void addequipment(){
-    FILE *fptr;
-    fptr=fopen("equipment.txt","a");
-    if(fptr==NULL){
-        printf("Error: Cannot open file!");
+    FILE *fptr = fopen("equipment.txt", "a");
+    if (fptr == NULL) {
+        printf("Error: Cannot open file!\n");
         return;
-    } else{
-        struct equipmentlist item;
-        printf("Enter equipment ID: ");
-        scanf("%d", &item.equipmentid);
-        getchar();
-
-        printf("Enter equipment name: ");
-        fgets(item.equipmentname, sizeof(item.equipmentname), stdin);
-        item.equipmentname[strcspn(item.equipmentname, "\n")] = '\0';
-
-        printf("Enter quantity of item in stock: ");
-        scanf("%d", &item.equipmentstock);
-
-        fprintf(file, "%d|%s|%d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
     }
-    fclose(file)
+
+    struct equipmentlist item;
+    printf("Enter equipment ID: ");
+    scanf("%d", &item.equipmentid);
+    getchar();
+
+    printf("Enter equipment name: ");
+    fgets(item.equipmentname, sizeof(item.equipmentname), stdin);
+    item.equipmentname[strcspn(item.equipmentname, "\n")] = '\0';
+
+    printf("Enter quantity of item in stock: ");
+    scanf("%d", &item.equipmentstock);
+    fprintf(fptr, "%d,%s,%d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
+    fclose(fptr);
+    printf("Equipment added successfully!\n");
 }
 
 void viewequipment(){
-    FILE *fptr;
-    fptr=fopen("equipment.txt", "r");
-    if(fptr==NULL){
-        printf("Error: Cannot open file!");
+    FILE *fptr = fopen("equipment.txt", "r");
+    if (fptr == NULL) {
+        printf("Error: File is empty!\n");
         return;
-    } else{
-        struct equipmentlist item;
-        char line[100];
+    }
 
-        printf("\n%-10s %-25s %-10s\n", "ID", "Name", "Quantity");
-        printf("-----------------------------------------------\n");
+    struct equipmentlist item;
+    char line[100];
+    printf("\n%-10s %-25s %-10s\n", "ID", "Name", "Quantity");
+    printf("-----------------------------------------------\n");
 
-        while(fgets(line, sizeof(line), file)){
-            if(sscanf(line, "%d,%49[^|],%d", &item.equipmentid, item.equipmentname, &item.equipmentstock)==3){
-                printf("%-10d %-25s %-10d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
-            }
+    while (fgets(line, sizeof(line), fptr)) {
+        if (sscanf(line, "%d,%49[^,],%d", &item.equipmentid, item.equipmentname, &item.equipmentstock) == 3) {
+            printf("%-10d %-25s %-10d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
         }
     }
-    fclose(file);
+    fclose(fptr);
 }
 
 void searchequipment(){
-    FILE *fptr;
-    fptr=fopen("equipment.txt", "r");
-    if(file == NULL){
-        printf("Error: Cannot open file!");
+    FILE *fptr = fopen("equipment.txt", "r");
+    if (fptr == NULL) {
+        printf("Error: Cannot open file!\n");
         return;
-    } else{
-        int targetid, found = 0;
-        struct equipmentlist item;
-        char line[100];
+    }
 
-        printf("Enter equipment ID to search: ");
-        scanf("%d", &targetid);
+    int targetid, found = 0;
+    struct equipmentlist item;
+    char line[100];
 
-        while(fgets(line, sizeof(line), file)){
-            if(sscanf(line, "%d,%49[^|],%d", &item.equipmentid, item.equipmentname, &item.equipmentstock) == 3){
-                if(item.equipmentid == targetid){
-                    printf("\nEquipment found -> ID: %d | Name: %s | Quantity: %d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
-                    found = 1;
-                    break;
-                }
+    printf("Enter equipment ID to search: ");
+    scanf("%d", &targetid);
+
+    while (fgets(line, sizeof(line), fptr)){
+        if (sscanf(line, "%d,%49[^,],%d", &item.equipmentid, item.equipmentname, &item.equipmentstock) == 3) {
+            if (item.equipmentid == targetid){
+                printf("\nEquipment found -> ID: %d | Name: %s | Quantity: %d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
+                found = 1;
+                break;
             }
         }
-        if(!found){
-            printf("Equipment with ID %d not found.\n", targetid);
-        }
     }
-    fclose(file);
+    if (!found) {
+        printf("Equipment with ID %d not found.\n", targetid);
+    }
+    fclose(fptr);
 }
 
-void updateequipment(){
+void updateequipment() {
     int updatechoice;
-    printf("1. Update equipment ID\n");
+    printf("\n1. Update equipment ID\n");
     printf("2. Update equipment name\n");
     printf("3. Update equipment stock\n");
     printf("4. Return\n");
     printf("Enter choice: ");
     scanf("%d", &updatechoice);
 
+    if (updatechoice == 4) return;
+
     FILE *file = fopen("equipment.txt", "r");
     FILE *temp = fopen("temp.txt", "w");
-
-    if(file == NULL || temp == NULL){
+    if (file == NULL || temp == NULL) {
         printf("Error: Cannot open file!\n");
         if (file) fclose(file);
         if (temp) fclose(temp);
@@ -125,32 +124,28 @@ void updateequipment(){
     scanf("%d", &targetid);
     getchar();
 
-    while(fgets(line, sizeof(line), file)){
-        if(sscanf(line, "%d,%49[^|],%d", &item.equipmentid, item.equipmentname, &item.equipmentstock) == 3){
-            if(item.equipmentid == targetid){
+    while (fgets(line, sizeof(line), file)) {
+        if (sscanf(line, "%d,%49[^,],%d", &item.equipmentid, item.equipmentname, &item.equipmentstock) == 3) {
+            if (item.equipmentid == targetid) {
                 found = 1;
                 printf("\nEquipment found -> ID: %d | Name: %s | Quantity: %d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
-
-                switch (updatechoice){
+                switch (updatechoice) {
                     case 1:
                         printf("Enter updated equipment ID: ");
                         scanf("%d", &item.equipmentid);
                         getchar();
-                        break;
                     case 2:
                         printf("Enter updated equipment name: ");
                         fgets(item.equipmentname, sizeof(item.equipmentname), stdin);
-                        item.equipmentname[strcspn(item.equipmentname, "\n")] = 0; 
-                        break;
+                        item.equipmentname[strcspn(item.equipmentname, "\n")] = '\0';
                     case 3:
                         printf("Enter updated equipment stock: ");
                         scanf("%d", &item.equipmentstock);
                         getchar();
-                        break;
                     case 4:
                         break;
                     default:
-                        printf("Invalid choie! Please try again!");
+                        printf("Invalid choice!\n");
                 }
             }
             fprintf(temp, "%d,%s,%d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
@@ -160,74 +155,72 @@ void updateequipment(){
     fclose(file);
     fclose(temp);
 
-    if (found){
+    if (found) {
         remove("equipment.txt");
-        rename("temp.txt", "equipment.txt"); 
-    } else{
+        rename("temp.txt", "equipment.txt");
+        printf("Record updated successfully.\n");
+    } else {
         remove("temp.txt");
         printf("Equipment ID %d not found.\n", targetid);
     }
 }
 
-//facility problem management
-void viewissues(){
-    FILE *fptr;
-    fptr=fopen("facilityissues.txt", "r");
-    if(fptr==NULL){
-        printf("Error: Cannot open file!");
+// problem management
+
+void viewissues() {
+    FILE *fptr = fopen("facilityissues.txt", "r");
+    if (fptr == NULL) {
+        printf("Error: Cannot open facilityissues.txt!\n");
         return;
-    } else{
-        struct facilityissues issue;
-        char line[150];
+    }
 
-        printf("\n%-10s %-25s %-10s\n", "ID", "Description", "Status");
-        printf("-----------------------------------------------\n");
+    struct facilityissues issue;
+    char line[200];
+    printf("\n%-10s %-35s %-15s\n", "ID", "Description", "Status");
+    printf("------------------------------------------------------------\n");
 
-        while(fgets(line, sizeof(line), file)){
-            if(sscanf(line, "%d,%49[^|],%49[^|]", &issue.issueid, issue.issuedesc, &issue.status)==3){
-                printf("%-10d %-25s %-10s\n", issue.issueid, issue.issuedesc, issue.status);
+    while (fgets(line, sizeof(line), fptr)) {
+        if (sscanf(line, "%d,%149[^,],%19[^\n]", &issue.issueid, issue.issuedesc, issue.status) == 3) {
+            printf("%-10d %-35s %-15s\n", issue.issueid, issue.issuedesc, issue.status);
+        }
+    }
+    fclose(fptr);
+}
+
+void searchissues() {
+    FILE *fptr = fopen("facilityissues.txt", "r");
+    if (fptr == NULL) {
+        printf("Error: Cannot open facilityissues.txt!\n");
+        return;
+    }
+
+    int targetid, found = 0;
+    struct facilityissues issue;
+    char line[200];
+
+    printf("Enter facility issue ID to search: ");
+    scanf("%d", &targetid);
+
+    while (fgets(line, sizeof(line), fptr)) {
+        if (sscanf(line, "%d,%149[^,],%19[^\n]", &issue.issueid, issue.issuedesc, issue.status) == 3) {
+            if (issue.issueid == targetid) {
+                printf("\nIssue found -> ID: %d | Description: %s | Status: %s\n", issue.issueid, issue.issuedesc, issue.status);
+                found = 1;
+                break;
             }
         }
     }
-    fclose(file);
-}
-
-void searchissues(){
-    FILE *fptr;
-    fptr=fopen("facilityissues.txt", "r");
-    if(file == NULL){
-        printf("Error: Cannot open file!");
-        return;
-    } else{
-        int targetid, found = 0;
-        struct facilityissues issue;
-        char line[150];
-
-        printf("Enter equipment ID to search: ");
-        scanf("%d", &targetid);
-
-        while(fgets(line, sizeof(line), file)){
-            if(sscanf(line, "%d,%49[^|],%s", &issue.issueid, issue.issuedesc, issue.status) == 3){
-                if(item.equipmentid == targetid){
-                    printf("\nIssue found -> ID: %d | Description: %s | Status: %d\n", issue.issueid, issue.issuedesc, issue.status);
-                    found = 1;
-                    break;
-                }
-            }
-        }
-        if(!found){
-            printf("Equipment with ID %d not found.\n", targetid);
-        }
+    if (!found) {
+        printf("Issue with ID %d not found.\n", targetid);
     }
-    fclose(file);
+    fclose(fptr);
 }
 
-void updateissues(){
+void updateissues() {
     FILE *file = fopen("facilityissues.txt", "r");
     FILE *temp = fopen("temp.txt", "w");
-
-    if(file == NULL || temp == NULL){
-        printf("Error: Cannot open file!\n");
+    if (file == NULL || temp == NULL) {
+        printf("Error: Cannot open facilityissues.txt!\n");
         if (file) fclose(file);
         if (temp) fclose(temp);
         return;
@@ -235,80 +228,82 @@ void updateissues(){
 
     int targetid, found = 0;
     struct facilityissues issue;
-    char line[150];
+    char line[200];
     char statusyn;
 
     printf("Enter ID of facility issue to update: ");
     scanf("%d", &targetid);
     getchar();
 
-    while(fgets(line, sizeof(line), file)){
-        if(sscanf(line, "%d,%49[^|],%s", &issue.issueid, issue.issuedesc, issue.status) == 3){
-            if(issue.issueid == targetid){
+    while (fgets(line, sizeof(line), file)) {
+        if (sscanf(line, "%d,%149[^,],%19[^\n]", &issue.issueid, issue.issuedesc, issue.status) == 3) {
+            if (issue.issueid == targetid) {
                 found = 1;
-                printf("\nIssue found -> ID: %d | Description: %s | Status: %d\n", issue.issueid, issue.issuedesc, issue.status);
-                if(issue.status == "INCOMPLETE"){
-                    printf("Would you like to update this issue to resolved? (Y/N): ");
-                    scanf("%c", statusyn);
-                    if(statusyn == "Y" || "y"){
-                        issue.status == "RESOLVED";
-                        printf("Status updated to resolved.");
-                    } else if(statusyn == "N" || "n"){
-                        printf("No changes made.")
-                    } else{
-                        printf("Invalid input.")
+                printf("\nIssue found -> ID: %d | Description: %s | Status: %s\n", issue.issueid, issue.issuedesc, issue.status);
+
+                if (strcmp(issue.status, "INCOMPLETE") == 0) {
+                    printf("Would you like to update this issue to RESOLVED? (Y/N): ");
+                    scanf(" %c", &statusyn);
+                    if (statusyn == 'Y' || statusyn == 'y') {
+                        strcpy(issue.status, "RESOLVED");
+                        printf("Status updated to RESOLVED.\n");
+                    } else if (statusyn == 'N' || statusyn == 'n') {
+                        printf("No changes made.\n");
+                    } else {
+                        printf("Invalid input.\n");
                     }
-                } else if(issue.status == "RESOLVED"){
-                    printf("Would you like to revert this issue to incomplete? (Y/N): ");
-                    scanf("%c", statusyn);
-                    if(statusyn == "Y" || "y"){
-                        issue.status == "INCOMPLETE";
-                        printf("Status updated to incomplete.");
-                    } else if(statusyn == "N" || "n"){
-                        printf("No changes made.")
-                    } else{
-                        printf("Invalid input.")
+                } else if (strcmp(issue.status, "RESOLVED") == 0) {
+                    printf("Would you like to revert this issue to INCOMPLETE? (Y/N): ");
+                    scanf(" %c", &statusyn);
+                    if (statusyn == 'Y' || statusyn == 'y') {
+                        strcpy(issue.status, "INCOMPLETE");
+                        printf("Status updated to INCOMPLETE.\n");
+                    } else if (statusyn == 'N' || statusyn == 'n') {
+                        printf("No changes made.\n");
+                    } else {
+                        printf("Invalid input.\n");
                     }
-                } else{
-                    printf("Error.");
+                } else {
+                    printf("Unknown status in file.\n");
                 }
             }
-            fprintf(temp, "%d,%s,%d\n", issue.issueid, issue.issuedesc, issue.status);
+            fprintf(temp, "%d,%s,%s\n", issue.issueid, issue.issuedesc, issue.status);
         }
     }
 
     fclose(file);
     fclose(temp);
 
-    if (found){
+    if (found) {
         remove("facilityissues.txt");
-        rename("temp.txt", "facilityissues.txt"); 
-    } else{
+        rename("temp.txt", "facilityissues.txt");
+    } else {
         remove("temp.txt");
         printf("Facility issue ID %d not found.\n", targetid);
     }
 }
 
-//inventory stock reports
-void viewsummary(){
-    int equipmentquantities[100];
-    FILE *fptr;
-    fptr=fopen("equipment.txt", "r");
-    FILE *report = fopen("reports.txt");
-    if(fptr==NULL){
-        printf("Error: Cannot open file!");
-        return;
-    } else{
-        struct equipmentlist item;
-        char line[150];
-        int totaltypes = 0;
-        int totalstock = 0;
+// stock report
 
-        printf("\n====================================================\n");
-        printf("          EQUIPMENT INVENTORY STOCK REPORT          \n");
-        printf("====================================================\n");
-        printf("%-10s | %-28s | %-8s\n", "ID", "Equipment Name", "Stock");
-        printf("----------------------------------------------------\n");
+void viewsummary() {
+    FILE *fptr = fopen("equipment.txt", "r");
+    if (fptr == NULL) {
+        printf("Error: Cannot open equipment.txt!\n");
+        return;
+    }
+
+    struct equipmentlist item;
+    char line[150];
+    int totaltypes = 0;
+    int totalstock = 0;
+
+    printf("\n====================================================\n");
+    printf("          EQUIPMENT INVENTORY STOCK REPORT          \n");
+    printf("====================================================\n");
+    printf("%-10s | %-28s | %-8s\n", "ID", "Equipment Name", "Stock");
+    printf("----------------------------------------------------\n");
+
+
 
         while (fgets(line, sizeof(line), fptr)) {
             if (sscanf(line, "%d,%49[^,\n],%d", &item.equipmentid, item.equipmentname, &item.equipmentstock) == 3) {
