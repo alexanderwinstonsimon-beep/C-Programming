@@ -1,0 +1,5 @@
+E001|Mat|5
+E002|Punching Bag|20
+E003|Boxing Gloves|42
+E004|Standard Gloves|30
+E005|Uniform|8
