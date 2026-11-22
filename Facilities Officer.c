@@ -318,20 +318,21 @@ void viewsummary(){
             }
         }
 
-    printf("----------------------------------------------------\n");
-    printf("Summary: %d Equipment Types | Total Units in Stock: %d\n", totalTypes, totalStock);
-    printf("====================================================\n\n");
-    fclose(fptr);
+        printf("----------------------------------------------------\n");
+        printf("Summary: %d Equipment Types | Total Units in Stock: %d\n", totalTypes, totalStock);
+        printf("====================================================\n\n");
+        fclose(fptr);
 
-    fopen("reports.txt","w");
-        if(report==NULL){
-            printf("Error: Cannot open file!");
-            return;
-        } else{
-            struct reports report;
-            fprintf(file, "%d|%d|%d\n", report.id, report.equipmenttype, report.equipmentstock);
+        fopen("reports.txt","w");
+            if(report==NULL){
+                printf("Error: Cannot open file!");
+                return;
+            } else{
+                struct reports report;
+                fprintf(file, "%d|%d|%d\n", report.id, report.equipmenttype, report.equipmentstock);
+            }
+        fclose(report);
         }
-    fclose(report);
 }
 
 void searchreports(){
