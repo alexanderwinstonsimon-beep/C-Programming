@@ -31,7 +31,7 @@ int main() {
                 printf("\n[Instructor Menu module not active in this build.]\n");
                 break;
             case 5:
-                printf("\n[Facilities Officer Menu module not active in this build.]\n");
+                facilitiesofficermenu();
                 break;
             case 6:
                 printf("\nExiting SDAMS Application. Goodbye!\n");
