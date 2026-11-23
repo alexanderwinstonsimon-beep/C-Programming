@@ -378,7 +378,7 @@ void inventorymanagement(){
         case 3:
             searchequipment();
         case 4:
-            updatequipment();
+            updateequipment();
         case 5:
             break;
         default:
@@ -448,7 +448,7 @@ void facilitiesofficermenu(){
         case 2:
             problemmanagement();
         case 3:
-            inventorystockreport();
+            inventorystockreports();
         case 4:
             break;
         default:
