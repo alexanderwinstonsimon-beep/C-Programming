@@ -15,7 +15,7 @@ void searchreports();
 
 void inventorymanagement();
 void problemmanagement();
-void inventorystockreports();
-void facilitiesofficermenu();
+void inventorystockreports()
+int facilitiesofficermenu();
 
 #endif

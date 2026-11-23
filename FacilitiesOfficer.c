@@ -37,6 +37,7 @@ void addequipment(){
     getchar();
 
     printf("Enter equipment name: ");
+    scanf("%c", item.equipmentname);
     fgets(item.equipmentname, sizeof(item.equipmentname), stdin);
     item.equipmentname[strcspn(item.equipmentname, "\n")] = '\0';
 
@@ -45,6 +46,7 @@ void addequipment(){
     fprintf(fptr, "%d,%s,%d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
     fclose(fptr);
     printf("Equipment added successfully!\n");
+    return;
 }
 
 void viewequipment(){
@@ -65,6 +67,7 @@ void viewequipment(){
         }
     }
     fclose(fptr);
+    return;
 }
 
 void searchequipment(){
@@ -94,6 +97,7 @@ void searchequipment(){
         printf("Equipment with ID %d not found.\n", targetid);
     }
     fclose(fptr);
+    return
 }
 
 void updateequipment() {
@@ -163,6 +167,7 @@ void updateequipment() {
         remove("temp.txt");
         printf("Equipment ID %d not found.\n", targetid);
     }
+    return;
 }
 
 // problem management
@@ -185,6 +190,7 @@ void viewissues() {
         }
     }
     fclose(fptr);
+    return;
 }
 
 void searchissues() {
@@ -214,6 +220,7 @@ void searchissues() {
         printf("Issue with ID %d not found.\n", targetid);
     }
     fclose(fptr);
+    return;
 }
 
 void updateissues() {
@@ -281,6 +288,7 @@ void updateissues() {
         remove("temp.txt");
         printf("Facility issue ID %d not found.\n", targetid);
     }
+    return;
 }
 
 // stock report
@@ -326,7 +334,8 @@ void viewsummary() {
     } else{
         fprintf(report, "%d|%d|%d\n", summary.id, summary.equipmenttype, summary.totalstock);
     }
-        fclose(report);
+    fclose(report);
+    return;
 }
 
 void searchreports(){
@@ -356,7 +365,8 @@ void searchreports(){
             printf("Report with ID %d not found.\n", targetid);
         }
     }
-    fclose(fptr);    
+    fclose(fptr);
+    return;
 }
 
 //facility officer menu options
@@ -433,7 +443,7 @@ void inventorystockreports(){
 }
 
 //actual menu
-void facilitiesofficermenu(){
+int facilitiesofficermenu(){
     int fochoice;
     printf("1. Equipment Inventory Management\n");
     printf("2. Facility Problem Management\n");
