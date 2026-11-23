@@ -286,7 +286,8 @@ void updateissues() {
 // stock report
 
 void viewsummary() {
-    FILE *fptr = fopen("equipment.txt", "r");
+    FILE *fptr;
+    fprt = fopen("equipment.txt", "r");
     if (fptr == NULL) {
         printf("Error: Cannot open equipment.txt!\n");
         return;
@@ -306,44 +307,44 @@ void viewsummary() {
     while (fgets(line, sizeof(line), fptr)) {
         if (sscanf(line, "%d,%49[^,\n],%d", &item.equipmentid, item.equipmentname, &item.equipmentstock) == 3) {
             printf("%-10d | %-28s | %-8d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
-            totalTypes++;
-            totalStock += item.equipmentstock;
+            totaltypes++;
+            totalstock += item.equipmentstock;
         }
     }
 
     printf("----------------------------------------------------\n");
-    printf("Summary: %d Equipment Types | Total Units in Stock: %d\n", totalTypes, totalStock);
+    printf("Summary: %d Equipment Types | Total Units in Stock: %d\n", totaltypes, totalstock);
     printf("====================================================\n\n");
     fclose(fptr);
 
-    fopen("reports.txt","w");
-        if(report==NULL){
-            printf("Error: Cannot open file!");
-            return;
-        } else{
-            struct reports report;
-            fprintf(file, "%d|%d|%d\n", report.id, report.equipmenttype, report.totalstock);
-        }
-    fclose(report);
+    struct reports summary;
+    FILE *report;
+    report = fopen("reports.txt", "w");
+    if(report==NULL){
+        printf("Error: Cannot open file!");
+        return;
+    } else{
+        fprintf(report, "%d|%d|%d\n", summary.id, summary.equipmenttype, summary.totalstock);
     }
+        fclose(report);
 }
 
 void searchreports(){
     FILE *fptr;
     fptr=fopen("reports.txt", "r");
-    if(file == NULL){
+    if(fptr == NULL){
         printf("Error: Cannot open file!");
         return;
     } else{
         int targetid, found = 0;
-        struct reports report;
+        struct reports summary;
         char line[150];
 
         printf("Enter report ID to search: ");
         scanf("%d", &targetid);
 
-        while(fgets(line, sizeof(line), file)){
-            if(sscanf(line, "%d,%d,%d", &report.id, &report.equipmenttype, &report.totalstock) == 3){
+        while(fgets(line, sizeof(line), fptr)){
+            if(sscanf(line, "%d,%d,%d", &summary.id, &summary.equipmenttype, &summary.totalstock) == 3){
                 if(report.id == targetid){
                     printf("\nReport found -> ID: %d | Equipment Types: %d | Equipment Stock: %d\n", &report.id, &report.equipmenttype, &report.totalstock);
                     found = 1;
@@ -355,7 +356,7 @@ void searchreports(){
             printf("Report with ID %d not found.\n", targetid);
         }
     }
-    fclose(file);    
+    fclose(fptr);    
 }
 
 //facility officer menu options
@@ -441,14 +442,14 @@ void facilitiesofficermenu(){
     printf("Enter choice: ");
     scanf("%d", &fochoice);
 
-    switch(choice){
+    switch(fochoice){
         case 1:
             inventorymanagement();
         case 2:
             problemmanagement();
         case 3:
             inventorystockreport();
-        case 4;
+        case 4:
             break;
         default:
             printf("Invalid option! Please try again!");
