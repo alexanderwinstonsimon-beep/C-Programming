@@ -354,7 +354,7 @@ void searchreports(){
 
         while(fgets(line, sizeof(line), fptr)){
             if(sscanf(line, "%d,%d,%d", &summary.id, &summary.equipmenttype, &summary.totalstock) == 3){
-                if(report.id == targetid){
+                if(summary.id == targetid){
                     printf("\nReport found -> ID: %d | Equipment Types: %d | Equipment Stock: %d\n", &summary.id, &summary.equipmenttype, &summary.totalstock);
                     found = 1;
                     break;
