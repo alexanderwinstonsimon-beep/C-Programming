@@ -7,5 +7,6 @@
 #include <ctype.h>
 #include "Student.h"
 #include "Administrator.h"
+#include "FacilitiesOfficer.h"
 
 #endif
