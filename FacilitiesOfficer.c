@@ -97,7 +97,7 @@ void searchequipment(){
         printf("Equipment with ID %d not found.\n", targetid);
     }
     fclose(fptr);
-    return
+    return;
 }
 
 void updateequipment() {
@@ -295,7 +295,7 @@ void updateissues() {
 
 void viewsummary() {
     FILE *fptr;
-    fprt = fopen("equipment.txt", "r");
+    fptr = fopen("equipment.txt", "r");
     if (fptr == NULL) {
         printf("Error: Cannot open equipment.txt!\n");
         return;
@@ -355,7 +355,7 @@ void searchreports(){
         while(fgets(line, sizeof(line), fptr)){
             if(sscanf(line, "%d,%d,%d", &summary.id, &summary.equipmenttype, &summary.totalstock) == 3){
                 if(report.id == targetid){
-                    printf("\nReport found -> ID: %d | Equipment Types: %d | Equipment Stock: %d\n", &report.id, &report.equipmenttype, &report.totalstock);
+                    printf("\nReport found -> ID: %d | Equipment Types: %d | Equipment Stock: %d\n", &summary.id, &summary.equipmenttype, &summary.totalstock);
                     found = 1;
                     break;
                 }
