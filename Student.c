@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "Student.h"
 #include "main.h"
 #define MAX 50
@@ -37,6 +38,26 @@ char rateComment[MAX][100];
 int  rateCount = 0;
 
 char currentStudentId[20] = "";
+
+typedef struct DemoNode {
+    int value;
+    union { int i; float f; } data;
+    struct DemoNode *next;
+} DemoNode;
+
+void demoAllFour(void){
+    DemoNode *a = malloc(sizeof(DemoNode));
+    DemoNode *b = malloc(sizeof(DemoNode));
+
+    a->value = 1; a->data.i = 10; a->next = b;
+    b->value = 2; b->data.f = 20.5f; b->next = NULL;
+
+    for (DemoNode *p = a; p; p = p->next)
+        printf("node %d: int=%d float=%.1f\n",
+               p->value, p->data.i, p->data.f);
+
+    free(b); free(a);
+}
 
 int loadStudents(){
     FILE *fp = fopen(STUDENT_FILE, "r");
@@ -209,6 +230,8 @@ int studentMenu(){
     loadClasses();
     loadPayments();
     loadRatings();
+
+    demoAllFour();
 
     do {
         printf("\nStudent Management System");
