@@ -39,26 +39,6 @@ int  rateCount = 0;
 
 char currentStudentId[20] = "";
 
-typedef struct DemoNode {
-    int value;
-    union { int i; float f; } data;
-    struct DemoNode *next;
-} DemoNode;
-
-void demoAllFour(void){
-    DemoNode *a = malloc(sizeof(DemoNode));
-    DemoNode *b = malloc(sizeof(DemoNode));
-
-    a->value = 1; a->data.i = 10; a->next = b;
-    b->value = 2; b->data.f = 20.5f; b->next = NULL;
-
-    for (DemoNode *p = a; p; p = p->next)
-        printf("node %d: int=%d float=%.1f\n",
-               p->value, p->data.i, p->data.f);
-
-    free(b); free(a);
-}
-
 int loadStudents(){
     FILE *fp = fopen(STUDENT_FILE, "r");
     char line[300];
@@ -231,8 +211,6 @@ int studentMenu(){
     loadPayments();
     loadRatings();
 
-    demoAllFour();
-
     do {
         printf("\nStudent Management System");
         printf("\nLogged in as: %s", currentStudentId);
@@ -317,23 +295,6 @@ int bookClass(){
                 break;
             }
             case 2: {
-                // if (classCount == 0){
-                //     printf("\nNo classes available yet.\n");
-                //     break;
-                // }
-
-                // printf("\n%-5s %-15s %-15s %-12s %-22s\n", "ID", "Subject", "Instructor", "Time", "Status");
-                // printf("------------------------------------------------------------------------\n");
-                // for (int i = 0; i < classCount; i++){
-                //     char status[25];
-                //     if (strcmp(classBookedBy[i], "-") == 0) 
-                //         strcpy(status, "Available");
-                //     else if (strcmp(classBookedBy[i], currentStudentId) == 0) 
-                //         strcpy(status, "Booked by you");
-                //     else 
-                //         strcpy(status, "Booked");
-                //     printf("%-5d %-15s %-15s %-12s %-22s\n", classId[i], classSubject[i], classInstructor[i], classTime[i], status);
-                // }
                 showBookedClasses();
                 break;
             }
