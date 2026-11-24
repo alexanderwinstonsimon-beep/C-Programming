@@ -39,6 +39,41 @@ int  rateCount = 0;
 
 char currentStudentId[20] = "";
 
+RateNode *rateHead = NULL;        
+PayType lastPayType;              
+
+void showStudent(Student *s){     
+    printf("ID: %s | Name: %s | Status: %s\n", s->id, s->name, s->status);
+}
+
+RateNode *addRating(RateNode *head, char *stuId, int classId, int score, char *comment){  
+    RateNode *node = malloc(sizeof(RateNode));
+    if(!node) return head;
+    strcpy(node->stuId, stuId);
+    node->classId = classId;
+    node->score = score;
+    strcpy(node->comment, comment);
+    node->next = head;
+    return node;
+}
+
+void showRatingList(RateNode *head){   
+    RateNode *p = head;
+    while(p != NULL){
+        printf("%-8s %-8d %-7d %-30s\n", p->stuId, p->classId, p->score, p->comment);
+        p = p->next;
+    }
+}
+
+void clearRatings(RateNode *head){    
+    RateNode *tmp;
+    while(head != NULL){
+        tmp = head;
+        head = head->next;
+        free(tmp);
+    }
+}
+
 int loadStudents(){
     FILE *fp = fopen(STUDENT_FILE, "r");
     char line[300];
@@ -126,6 +161,7 @@ int loadRatings(){
     if (!fp) return 0;
     rateCount = 0;
     while (fscanf(fp, "%19[^|]|%d|%d|%99[^\n]\n", rateStuId[rateCount], &rateClassId[rateCount], &rateScore[rateCount], rateComment[rateCount]) == 4) {
+        rateHead = addRating(rateHead, rateStuId[rateCount], rateClassId[rateCount], rateScore[rateCount], rateComment[rateCount]);   
         rateCount++;
         if (rateCount >= MAX) 
             break;
@@ -162,6 +198,16 @@ int login(){
                 }
                 strcpy(currentStudentId, stuId[i]);
                 printf("\nLogin successful. Welcome, %s (ID: %s)!\n", user, currentStudentId);
+
+                Student tmpStu;                              
+                strcpy(tmpStu.id, stuId[i]);                 
+                strcpy(tmpStu.name, stuName[i]);              
+                strcpy(tmpStu.user, stuUser[i]);              
+                strcpy(tmpStu.pass, stuPass[i]);              
+                strcpy(tmpStu.status, stuStatus[i]);          
+                strcpy(tmpStu.contact, stuContact[i]);       
+                showStudent(&tmpStu);                         
+
                 return 1;
             }
         }
@@ -239,6 +285,8 @@ int studentMenu(){
                 printf("\nInvalid choice! Please try again.\n");
         }
     } while (choice != 4);
+
+    clearRatings(rateHead);       
     return 0;
 }
 
@@ -461,6 +509,7 @@ int payment(){
                 }
 
                 payAmount[payCount] = currentPrice;
+                lastPayType.amount = currentPrice;            
     
                 printf("Amount to pay: RM%.2f\n", payAmount[payCount]);
                 printf("Enter date (DD/MM/YYYY): ");
@@ -488,6 +537,9 @@ int payment(){
                 }
                 if (shown == 0) 
                     printf("(No payment records for you yet.)\n");
+
+                printf("(Last payment recorded as amount: RM%.2f)\n", lastPayType.amount);
+                
                 break;
             }
             case 3:
@@ -574,6 +626,7 @@ int rating(){
                 strcpy(rateStuId[rateCount], currentStudentId);
                 rateClassId[rateCount] = id;
                 rateScore[rateCount]   = score;
+                rateHead = addRating(rateHead, currentStudentId, id, score, rateComment[rateCount]);   
                 rateCount++;
                 saveRatings();
 
@@ -588,8 +641,7 @@ int rating(){
 
                 printf("\n%-8s %-8s %-7s %-30s\n", "Student", "Class ID", "Score", "Comment");
                 printf("------------------------------------------------------------------\n");
-                for (int i = 0; i < rateCount; i++)
-                    printf("%-8s %-8d %-7d %-30s\n", rateStuId[i], rateClassId[i], rateScore[i], rateComment[i]);
+                showRatingList(rateHead);  
                 break;
             }
             case 3:
