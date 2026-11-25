@@ -28,7 +28,7 @@ int main() {
                 studentMenu();
                 break;
             case 4:
-                printf("\n[Instructor Menu module not active in this build.]\n");
+                instructorMenu();
                 break;
             case 5:
                 facilitiesofficermenu();
