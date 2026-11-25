@@ -1,5 +1,7 @@
 #include<stdio.h>
 #include<string.h>
+#include "Instructor.h"
+#include "main.h"
 struct Class
 {
     int classID;
