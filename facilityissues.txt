@@ -1,3 +1,3 @@
-I001|Damaged Mats|INCOMPLETE
-I002|Lights Broken|INCOMPLETE
-I003|Air-Conditioner Broken|RESOLVED
+1,     Damaged Mats, INCOMPLETE
+2,     Lights Broken,  INCOMPLETE
+3,     Air-Conditioner Broken,    RESOLVED
