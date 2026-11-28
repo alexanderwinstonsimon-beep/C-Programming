@@ -14,9 +14,14 @@ int main() {
         printf("| 6. Exit Application                   |\n");
         printf("=========================================\n");
         printf("Enter your choice: ");
-        scanf("%d", &choice);
-        while (getchar() != '\n');
-        
+
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n');
+            choice = 0;
+        }
+        else {
+            while (getchar() != '\n');
+        }
         switch (choice) {
             case 1:
                 printf("\n[Manager Menu module not active in this build.]\n");
@@ -27,9 +32,9 @@ int main() {
             case 3:
                 studentMenu();
                 break;
-            // case 4:
-            //     instructorMenu();
-            //     break;
+            case 4:
+                instructorMenu();
+                break;
             case 5:
                 facilitiesofficermenu();
                 break;
