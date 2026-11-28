@@ -1,4 +1,4 @@
-#ifdef INSTRUCTOR_H
+#ifndef INSTRUCTOR_H
 #define INSTRUCTOR_H
 
 void viewClassSchedule();
@@ -13,8 +13,8 @@ void viewFacilityProblems();
 
 void viewInstructorRating();
 
-void readLine(char text[], int size)
+void readLine(char text[], int size);
 
-void instructorMenu()
+void instructorMenu();
 
 #endif
