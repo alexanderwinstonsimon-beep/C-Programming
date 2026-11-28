@@ -15,7 +15,7 @@ To address these challenges, SDA has appointed you to develop a **Self Defence A
 ## User Roles & Functional Requirements
 
 ### 🧑‍💼 Manager
-* **Authentication:** Login and logout. On first use, set a Manager ID and password; store them in `Text_Files/manager.txt`.
+* **Authentication:** Login and logout. On first use, set a Manager name and password; store them in `Text_Files/manager.txt`.
 * **Manage Administrator (Add, View, Search, Update):** 
   * Add new administrator accounts.
   * Search for existing administrators by name or ID.

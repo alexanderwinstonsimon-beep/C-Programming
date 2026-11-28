@@ -119,17 +119,23 @@ while (1) {
 
 }
 
-static int parseManagerCredential(const char *line, int *id, char password[50]) {
-    return sscanf(line, "%d|%49[^\r\n]", id, password) == 2 ||
-           sscanf(line, "%d %49s", id, password) == 2;
+static int parseManagerCredential(const char *line, char name[50], char password[50]) {
+    return sscanf(line, "%49[^|]|%49[^\r\n]", name, password) == 2 ||
+           sscanf(line, "%49s %49s", name, password) == 2;
 }
 
 static int createManagerAccount(void) {
-int id;
+char name[50];
 char password[50];
 
 printf("\nNo Manager account found. Set up the first account.\n");
-id = readInt("Choose Manager ID: ", 1, MAX_ID);
+do {
+    readString("Choose Manager name: ", name, sizeof(name));
+    if (strchr(name, '|') != NULL) {
+        printf("Name cannot contain '|'\n");
+    }
+} while (strchr(name, '|') != NULL);
+
 do {
     readString("Create password: ", password, sizeof(password));
     if (strchr(password, '|') != NULL) {
@@ -142,7 +148,7 @@ if (fp == NULL) {
     printf("Unable to create %s\n", MANAGER_FILE);
     return 0;
 }
-int writeFailed = fprintf(fp, "%d|%s\n", id, password) < 0;
+int writeFailed = fprintf(fp, "%s|%s\n", name, password) < 0;
 int closeFailed = fclose(fp) != 0;
 if (writeFailed || closeFailed) {
     printf("Unable to save Manager credentials.\n");
@@ -153,8 +159,7 @@ return 1;
 }
 
 int managerLogin(void) {
-int id, fileId;
-char password[50], filePass[50];
+char name[50], password[50], fileName[50], filePass[50];
 char buffer[100];
 int found = 0, hasCredential = 0;
 FILE *fp = fopen(MANAGER_FILE, "r");
@@ -164,7 +169,7 @@ if (fp == NULL) {
 }
 
 while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-    if (parseManagerCredential(buffer, &fileId, filePass)) {
+    if (parseManagerCredential(buffer, fileName, filePass)) {
         hasCredential = 1;
         break;
     }
@@ -182,8 +187,8 @@ if (!hasCredential) {
 while (!found) {
     printf("\nManager Login\n");
     printf("---------------------------------\n");
-    id = readInt("Enter ID (0 to cancel): ", 0, MAX_ID);
-    if (id == 0) {
+    readString("Enter name (or 0 to cancel): ", name, sizeof(name));
+    if (strcmp(name, "0") == 0) {
         fclose(fp);
         printf("Login cancelled\n");
         return 0;
@@ -192,8 +197,8 @@ while (!found) {
 
     rewind(fp);
     while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        if (parseManagerCredential(buffer, &fileId, filePass)
-            && id == fileId && strcmp(password, filePass) == 0) {
+        if (parseManagerCredential(buffer, fileName, filePass)
+            && strcmp(name, fileName) == 0 && strcmp(password, filePass) == 0) {
             found = 1;
             break;
         }
