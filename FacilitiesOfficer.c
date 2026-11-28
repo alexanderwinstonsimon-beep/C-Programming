@@ -27,23 +27,36 @@ struct reports{
     int totalstock;
 };
 
+static int readMenuChoice(const char *prompt){
+    int choice;
+    int character;
+
+    printf("%s", prompt);
+    if (scanf("%d", &choice) != 1){
+        while ((character = getchar()) != '\n' && character != EOF){}
+        return -1;
+    }
+    while ((character = getchar()) != '\n' && character != EOF){}
+    return choice;
+}
+
 // login system
 
 void registeruser(){
     struct user newuser;
     FILE *fptr;
-    fptr = fopen("facilityofficers.txt", "a");
+    fptr = fopen("Text_Files/facilityofficers.txt", "a");
     if(fptr==NULL){
         printf("Error: cannot find file!");
         return;
     }
 
-    printf("\n--- Register New Account ---\n");
+    printf("\nFacilities Officer Registration\n");
     printf("Enter username: ");
-    scanf("%30s", newuser.username);
+    scanf("%29s", newuser.username);
     
     printf("Enter password: ");
-    scanf("%30s", newuser.password);
+    scanf("%29s", newuser.password);
 
     fprintf(fptr, "%s, %s\n", newuser.username, newuser.password);
     printf("Registration successful!\n");
@@ -58,20 +71,21 @@ int loginuser(){
     char line[100];
     int loginsuccess = 0;
 
-    printf("\n--- Login ---\n");
+    printf("\nFacilities Officer Login\n");
     printf("Username: ");
-    scanf("%30s", inputuser.username);
+    scanf("%29s", inputuser.username);
     
     printf("Password: ");
-    scanf("%30s", inputuser.password);
+    scanf("%29s", inputuser.password);
 
-    FILE *fptr = fopen("facilityofficers.txt", "r");
+    FILE *fptr = fopen("Text_Files/facilityofficers.txt", "r");
     if(fptr==NULL){
         printf("No registered users found.\n");
+        return 0;
     }
 
     while (fgets(line, sizeof(line), fptr)){
-        if (sscanf(line, "%30[^,], %30s", storeduser.username, storeduser.password)==2){ 
+        if (sscanf(line, "%29[^,], %29s", storeduser.username, storeduser.password)==2){
             if(strcmp(inputuser.username, storeduser.username) == 0 && strcmp(inputuser.password, storeduser.password) == 0){
                 loginsuccess = 1;
                 break;
@@ -102,11 +116,12 @@ void addequipment(){
 
     struct equipmentlist item;
     do{
+        printf("\nAdd Equipment\n");
         printf("Enter equipment ID: ");
         scanf("%d", &item.equipmentid);
 
         printf("Enter equipment name: ");
-        scanf(" %50[^\n]", &item.equipmentname);
+        scanf(" %49[^\n]", item.equipmentname);
 
         printf("Enter quantity of item in stock: ");
         scanf("%d", &item.equipmentstock);
@@ -124,8 +139,7 @@ void addequipment(){
 }
 
 void viewequipment(){
-    char veexityn;
-    FILE *fptr = fopen("equipment.txt", "r");
+    FILE *fptr = fopen("Text_Files/equipment.txt", "r");
     if (fptr == NULL) {
         printf("Error: File is empty!\n");
         return;
@@ -133,6 +147,7 @@ void viewequipment(){
 
     struct equipmentlist item;
     char line[100];
+    printf("\nEquipment Inventory\n");
     printf("\n%-10s %-25s %-10s\n", "ID", "Name", "Quantity");
     printf("-----------------------------------------------\n");
 
@@ -141,15 +156,12 @@ void viewequipment(){
             printf("%-10d %-25s %-10d\n", item.equipmentid, item.equipmentname, item.equipmentstock);
         }
     }
-    printf("Exit? (Y): ");
-    scanf(" %c", &veexityn);
-
     fclose(fptr);
     return;
 }
 
 void searchequipment(){
-    FILE *fptr = fopen("equipment.txt", "r");
+    FILE *fptr = fopen("Text_Files/equipment.txt", "r");
     if (fptr == NULL) {
         printf("Error: Cannot open file!\n");
         return;
@@ -161,7 +173,7 @@ void searchequipment(){
         int targetid, found = 0;
         struct equipmentlist item;
         char line[100];
-        printf("Enter equipment ID to search: ");
+        printf("\nEnter equipment ID to search: ");
         scanf("%d", &targetid);
 
         while (fgets(line, sizeof(line), fptr)){
@@ -176,7 +188,7 @@ void searchequipment(){
         if (!found) {
             printf("Equipment with ID %d not found.\n", targetid);
         }
-        printf("Continue? (Y/N): ");
+        printf("\nSearch for another item? (Y/N): ");
         scanf(" %c", &secontinueyn);
     } while(secontinueyn=='Y' || secontinueyn=='y');
 
@@ -189,16 +201,23 @@ void updateequipment() {
     char uecontinueyn;
     
     do{
-        printf("\n1. Update equipment ID\n");
+        printf("\nUpdate Equipment\n");
+        printf("1. Update equipment ID\n");
         printf("2. Update equipment name\n");
         printf("3. Update equipment stock\n");
         printf("4. Delete equipment entry\n");
-        printf("5. Exit\n");
-        printf("Enter choice: ");
-        scanf("%d", &updatechoice);
+        printf("5. Back to Inventory Menu\n");
+        updatechoice = readMenuChoice("Enter choice: ");
+        if (updatechoice == 5)
+            break;
+        if (updatechoice < 1 || updatechoice > 4){
+            printf("\nInvalid choice. Select an option from 1 to 5.\n");
+            uecontinueyn = 'Y';
+            continue;
+        }
 
-        FILE *file = fopen("equipment.txt", "r");
-        FILE *temp = fopen("temp.txt", "w");
+        FILE *file = fopen("Text_Files/equipment.txt", "r");
+        FILE *temp = fopen("Text_Files/temp.txt", "w");
         if (file == NULL || temp == NULL) {
             printf("Error: Cannot open file!\n");
             if (file) fclose(file);
@@ -252,14 +271,14 @@ void updateequipment() {
         fclose(temp);
 
         if(found){
-            remove("equipment.txt");
-            rename("temp.txt", "equipment.txt");
+            remove("Text_Files/equipment.txt");
+            rename("Text_Files/temp.txt", "Text_Files/equipment.txt");
             printf("Record updated successfully.\n");
         }else{
-            remove("temp.txt");
+            remove("Text_Files/temp.txt");
             printf("Equipment ID %d not found.\n", targetid);
         }
-        printf("Continue? (Y/N): ");
+        printf("\nUpdate another equipment record? (Y/N): ");
         scanf(" %c", &uecontinueyn);
     } while(uecontinueyn=='Y'||uecontinueyn=='y');
     return;
@@ -268,16 +287,15 @@ void updateequipment() {
 // problem management
 
 void viewissues() {
-    FILE *fptr = fopen("facilityissues.txt", "r");
+    FILE *fptr = fopen("Text_Files/facilityissues.txt", "r");
     if(fptr == NULL){
-        printf("Error: Cannot open facilityissues.txt!\n");
+        printf("Error: Cannot open Text_Files/facilityissues.txt!\n");
         return;
     }
 
     struct facilityissues issue;
     char line[200];
-    char vicontinueyn;
-
+    printf("\nFacility Issues\n");
     printf("\n%-10s %-35s %-15s\n", "ID", "Description", "Status");
     printf("------------------------------------------------------------\n");
 
@@ -286,17 +304,14 @@ void viewissues() {
             printf("%-10d %-35s %-15s\n", issue.issueid, issue.issuedesc, issue.status);
         }
     }
-    printf("Exit? (Y): ");
-    scanf(" %c", &vicontinueyn);
-
     fclose(fptr);
     return;
 }
 
 void searchissues() {
-    FILE *fptr = fopen("facilityissues.txt", "r");
+    FILE *fptr = fopen("Text_Files/facilityissues.txt", "r");
     if (fptr == NULL) {
-        printf("Error: Cannot open facilityissues.txt!\n");
+        printf("Error: Cannot open Text_Files/facilityissues.txt!\n");
         return;
     }
 
@@ -306,7 +321,7 @@ void searchissues() {
         struct facilityissues issue;
         char line[200];
 
-        printf("Enter facility issue ID to search: ");
+        printf("\nEnter facility issue ID to search: ");
         scanf("%d", &targetid);
 
         while (fgets(line, sizeof(line), fptr)) {
@@ -323,7 +338,7 @@ void searchissues() {
             printf("Issue with ID %d not found.\n", targetid);
         }
 
-        printf("Continue? (Y/N): ");
+        printf("\nSearch for another issue? (Y/N): ");
         scanf(" %c", &sicontinueyn);
     } while(sicontinueyn=='Y'||sicontinueyn=='y');
     fclose(fptr);
@@ -333,8 +348,8 @@ void searchissues() {
 void updateissues(){
     char uicontinueyn;
     do{
-        FILE *file = fopen("facilityissues.txt", "r");
-        FILE *temp = fopen("temp.txt", "w");
+        FILE *file = fopen("Text_Files/facilityissues.txt", "r");
+        FILE *temp = fopen("Text_Files/temp.txt", "w");
         if (file == NULL || temp == NULL) {
             printf("Error: Cannot open file!\n");
             if (file) fclose(file);
@@ -345,9 +360,7 @@ void updateissues(){
         int targetid, found = 0;
         struct facilityissues issue;
         char line[200];
-        char statusyn;
-
-        printf("Enter ID of facility issue to update: ");
+        printf("\nEnter ID of facility issue to update: ");
         scanf("%d", &targetid);
         getchar();
 
@@ -367,13 +380,13 @@ void updateissues(){
         fclose(temp);
 
         if (found) {
-            remove("facilityissues.txt");
-            rename("temp.txt", "facilityissues.txt");
+            remove("Text_Files/facilityissues.txt");
+            rename("Text_Files/temp.txt", "Text_Files/facilityissues.txt");
         } else {
-            remove("temp.txt");
+            remove("Text_Files/temp.txt");
             printf("Facility issue ID %d not found.\n", targetid);
         }
-        printf("Continue? (Y/N): ");
+        printf("\nUpdate another issue? (Y/N): ");
         scanf(" %c", &uicontinueyn);
     } while(uicontinueyn=='Y'||uicontinueyn=='y');
 
@@ -384,9 +397,9 @@ void updateissues(){
 
 void viewsummary(){
     FILE *fptr;
-    fptr = fopen("equipment.txt", "r");
+    fptr = fopen("Text_Files/equipment.txt", "r");
     if (fptr == NULL) {
-        printf("Error: Cannot open equipment.txt!\n");
+        printf("Error: Cannot open Text_Files/equipment.txt!\n");
         return;
     }
 
@@ -395,19 +408,15 @@ void viewsummary(){
     int totaltypes = 0;
     int totalstock = 0;
     int summaryid;
-    struct reports summary;
-    char vscontinueyn;
     
     FILE *report;
-    report = fopen("reports.txt", "a");
+    report = fopen("Text_Files/reports.txt", "a");
     if(report==NULL){
         printf("Error: Cannot open file!");
         return;
     }
 
-    printf("\n====================================================\n");
-    printf("          EQUIPMENT INVENTORY STOCK REPORT          \n");
-    printf("====================================================\n");
+    printf("\nEquipment Inventory Stock Report\n");
     printf("%-10s | %-28s | %-8s\n", "ID", "Equipment Name", "Stock");
     printf("----------------------------------------------------\n");
 
@@ -421,12 +430,9 @@ void viewsummary(){
 
     printf("----------------------------------------------------\n");
     printf("Summary: %d Equipment Types | Total Units in Stock: %d\n", totaltypes, totalstock);
-    printf("====================================================\n\n");
-    printf("Enter ID of this summary: ");
+    printf("====================================================\n");
+    printf("\nEnter report ID to save this summary: ");
     scanf("%d", &summaryid);
-
-    printf("Exit? (Y): ");
-    scanf(" %c", &vscontinueyn);
 
     fclose(fptr);
     fprintf(report, "%d, %d, %d\n", summaryid, totaltypes, totalstock);
@@ -437,7 +443,7 @@ void viewsummary(){
 void searchreports(){
     char srcontinueyn = 'Y';
         FILE *report;
-        report=fopen("reports.txt", "r");
+        report=fopen("Text_Files/reports.txt", "r");
         if(report == NULL){
             printf("Error: Cannot open file!");
             return;
@@ -475,14 +481,14 @@ void searchreports(){
 void inventorymanagement(){
     char imcontinueyn = 'Y';
     do{
-        int imchoice;
-        printf("1. Add Equipment\n");
-        printf("2. View Equipment\n");
-        printf("3. Search Equipment\n");
-        printf("4. Update Equipment\n");
-        printf("5. Exit\n");
-        printf("Enter choice: ");
-        scanf("%d", &imchoice);
+        int imchoice = readMenuChoice(
+            "\nEquipment Inventory Management\n"
+            "1. Add Equipment\n"
+            "2. View Equipment\n"
+            "3. Search Equipment\n"
+            "4. Update Equipment\n"
+            "5. Back to Facilities Officer Menu\n"
+            "Enter choice: ");
 
         switch(imchoice){
             case 1:
@@ -501,7 +507,7 @@ void inventorymanagement(){
                 imcontinueyn = 'N';
                 break;
             default:
-                printf("Invalid option! Please try again!");
+                printf("\nInvalid choice. Select an option from 1 to 5.\n");
                 break;
         }
     } while(imcontinueyn=='Y');
@@ -513,12 +519,13 @@ void problemmanagement(){
     char pmcontinueyn = 'Y';
 
     do{
-        printf("1. View Facility Issues\n");
-        printf("2. Search Facility Issues\n");
-        printf("3. Update Facility Issues\n");
-        printf("4. Exit\n");
-        printf("Enter choice: ");
-        scanf("%d", &pmchoice);
+        pmchoice = readMenuChoice(
+            "\nFacility Problem Management\n"
+            "1. View Facility Issues\n"
+            "2. Search Facility Issues\n"
+            "3. Update Facility Issues\n"
+            "4. Back to Facilities Officer Menu\n"
+            "Enter choice: ");
 
         switch(pmchoice){
             case 1:
@@ -534,7 +541,7 @@ void problemmanagement(){
                 pmcontinueyn = 'N';
                 break;
             default:
-                printf("Invalid option! Please try again!");
+                printf("\nInvalid choice. Select an option from 1 to 4.\n");
                 break;
         }
     } while(pmcontinueyn=='Y');
@@ -545,11 +552,12 @@ void inventorystockreports(){
     int isrchoice;
     char isrcontinueyn = 'Y';
     do{
-        printf("1. View Inventory Stock Summary\n");
-        printf("2. Search Inventory Stock Reports\n");
-        printf("3. Exit\n");
-        printf("Enter choice: ");
-        scanf("%d", &isrchoice);
+        isrchoice = readMenuChoice(
+            "\nEquipment Inventory Stock Reports\n"
+            "1. View Inventory Stock Summary\n"
+            "2. Search Inventory Stock Reports\n"
+            "3. Back to Facilities Officer Menu\n"
+            "Enter choice: ");
     
         switch(isrchoice){
             case 1:
@@ -562,7 +570,7 @@ void inventorystockreports(){
                 isrcontinueyn = 'N';
                 break;
             default:
-                printf("Invalid option! Please try again!");
+                printf("\nInvalid choice. Select an option from 1 to 3.\n");
                 break;
         }
     } while(isrcontinueyn=='Y');
@@ -575,12 +583,13 @@ int successfullogin(){
     int fochoice;
     char focontinueyn = 'Y';
     do{
-        printf("1. Equipment Inventory Management\n");
-        printf("2. Facility Problem Management\n");
-        printf("3. Equipment Inventory Stock Reports\n");
-        printf("4. Logout\n");
-        printf("Enter choice: ");
-        scanf("%d", &fochoice);
+        fochoice = readMenuChoice(
+            "\nFacilities Officer Menu\n"
+            "1. Equipment Inventory Management\n"
+            "2. Facility Problem Management\n"
+            "3. Equipment Inventory Stock Reports\n"
+            "4. Logout\n"
+            "Enter choice: ");
 
         switch(fochoice){
             case 1:
@@ -596,7 +605,7 @@ int successfullogin(){
                 focontinueyn = 'N';
                 break;
             default:
-                printf("Invalid option! Please try again!");
+                printf("\nInvalid choice. Select an option from 1 to 4.\n");
                 break;
         }
     } while(focontinueyn=='Y');
@@ -608,16 +617,12 @@ int facilitiesofficermenu(){
     int authenticated = 0;
     
     while(!authenticated){
-        printf("\n1. Login\n");
-        printf("2. Register\n");
-        printf("3. Exit\n");
-        printf("Enter choice: ");
-
-        if(scanf("%d", &fochoice)!=1){
-            while(getchar()!='\n');
-            printf("Invalid input! Please try again!");
-            continue;
-        }
+        fochoice = readMenuChoice(
+            "\nFacilities Officer Access\n"
+            "1. Login\n"
+            "2. Register\n"
+            "3. Back to Main Menu\n"
+            "Enter choice: ");
 
         switch(fochoice){
             case 1:
@@ -627,10 +632,10 @@ int facilitiesofficermenu(){
                 registeruser();
                 break;
             case 3:
-                break;
+                return 0;
             default:
-                printf("Invalid option! Please try again!");
+                printf("\nInvalid choice. Select an option from 1 to 3.\n");
         }
     }
-    successfullogin();
+    return successfullogin();
 }

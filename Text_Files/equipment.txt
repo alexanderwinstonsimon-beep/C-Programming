@@ -1,0 +1,4 @@
+1, Mats,20
+2, Glove,23
+3, Headguard,2
+4, Water Bottle,16
