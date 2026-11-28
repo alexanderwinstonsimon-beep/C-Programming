@@ -5,18 +5,36 @@
 #define STUDENT_FILE "Text_Files/students.txt"
 #define PAYMENT_FILE "Text_Files/payments.txt"
 
-char instId[ADMIN_MAX][20], instName[ADMIN_MAX][50];
-char instPass[ADMIN_MAX][30], instContact[ADMIN_MAX][30];
-char instStatus[ADMIN_MAX][20];
+typedef struct {
+    char id[20];
+    char name[50];
+    char password[30];
+    char contact[30];
+    char status[20];
+} InstructorRecord;
+
+typedef struct {
+    char id[20];
+    char name[50];
+    char password[30];
+    char status[20];
+} StudentRecord;
+
+typedef struct {
+    char studentId[20];
+    int classId;
+    float amount;
+    char date[20];
+} PaymentRecord;
+
+InstructorRecord instructors[ADMIN_MAX];
 int instCount;
 
-char stuIdAdmin[ADMIN_MAX][20], stuNameAdmin[ADMIN_MAX][50];
-char stuPassAdmin[ADMIN_MAX][30], stuStatusAdmin[ADMIN_MAX][20];
+StudentRecord students[ADMIN_MAX];
 int stuCountAdmin;
 
-char payStudent[ADMIN_MAX][20], payDateAdmin[ADMIN_MAX][20];
-int payClassAdmin[ADMIN_MAX], payCountAdmin;
-float payAmountAdmin[ADMIN_MAX];
+PaymentRecord payments[ADMIN_MAX];
+int payCountAdmin;
 
 static void trim(char *text) {
     size_t n = strlen(text);
@@ -61,14 +79,15 @@ static int saveInstructors(void) {
     FILE *fp = fopen(INSTRUCTOR_FILE, "w");
     if (!fp) return 0;
     for (int i = 0; i < instCount; i++)
-        fprintf(fp, "%s|%s|%s|%s|%s\n", instId[i], instName[i],
-                instPass[i], instContact[i], instStatus[i]);
+        fprintf(fp, "%s|%s|%s|%s|%s\n", instructors[i].id, instructors[i].name,
+                instructors[i].password, instructors[i].contact, instructors[i].status);
     fclose(fp);
     return 1;
 }
 
 static int findInstructor(const char *id) {
-    for (int i = 0; i < instCount; i++) if (!strcmp(instId[i], id)) return i;
+    for (int i = 0; i < instCount; i++)
+        if (!strcmp(instructors[i].id, id)) return i;
     return -1;
 }
 
@@ -82,11 +101,11 @@ static int loadInstructors(void) {
         int n = fields(line, f, 7);
         if (n != 5) continue;
 
-        strcpy(instId[instCount], f[0]);
-        strcpy(instName[instCount], f[1]);
-        strcpy(instPass[instCount], f[2]);
-        strcpy(instContact[instCount], f[3]);
-        strcpy(instStatus[instCount], f[4]);
+        strcpy(instructors[instCount].id, f[0]);
+        strcpy(instructors[instCount].name, f[1]);
+        strcpy(instructors[instCount].password, f[2]);
+        strcpy(instructors[instCount].contact, f[3]);
+        strcpy(instructors[instCount].status, f[4]);
 
         instCount++;
     }
@@ -120,11 +139,11 @@ int manageInstructors(void) {
                     printf("\nName and password are required.\n");
                     break;
                 }
-                strcpy(instId[instCount], id);
-                strcpy(instName[instCount], name);
-                strcpy(instPass[instCount], pass);
-                strcpy(instContact[instCount], contact);
-                strcpy(instStatus[instCount], "active");
+                strcpy(instructors[instCount].id, id);
+                strcpy(instructors[instCount].name, name);
+                strcpy(instructors[instCount].password, pass);
+                strcpy(instructors[instCount].contact, contact);
+                strcpy(instructors[instCount].status, "active");
                 instCount++;
 
                 if (saveInstructors())
@@ -136,7 +155,8 @@ int manageInstructors(void) {
             case 2:
                 printf("\n%-12s %-22s %-16s %-16s\n", "ID", "Name", "Contact", "Status");
                 for (int i = 0; i < instCount; i++)
-                    printf("%-12s %-22s %-16s %-16s\n", instId[i], instName[i], instContact[i], instStatus[i]);
+                    printf("%-12s %-22s %-16s %-16s\n", instructors[i].id, instructors[i].name,
+                           instructors[i].contact, instructors[i].status);
                 if (!instCount) printf("(No instructor records.)\n");
                 break;
             case 3: {
@@ -145,12 +165,13 @@ int manageInstructors(void) {
                 scanf("%d", &filter); while (getchar() != '\n'); inputLine("Search text: ", needle, sizeof(needle));
                 int found = 0;
                 for (int i = 0; i < instCount; i++) {
-                    int match = (filter == 1) ? contains(instId[i], needle) :
-                                (filter == 2) ? contains(instName[i], needle) :
-                                (filter == 3) ? contains(instContact[i], needle) :
+                    int match = (filter == 1) ? contains(instructors[i].id, needle) :
+                                (filter == 2) ? contains(instructors[i].name, needle) :
+                                (filter == 3) ? contains(instructors[i].contact, needle) :
                                 0;
                     if (match) {
-                        printf("%-12s %-22s %-16s %-16s\n", instId[i], instName[i], instContact[i], instStatus[i]);
+                        printf("%-12s %-22s %-16s %-16s\n", instructors[i].id, instructors[i].name,
+                               instructors[i].contact, instructors[i].status);
                         found++;
                     }
                 }
@@ -161,7 +182,7 @@ int manageInstructors(void) {
                 char id[20]; inputLine("\nInstructor ID to deactivate: ", id, sizeof(id));
                 int i = findInstructor(id);
                 if (i < 0) printf("\nInstructor ID not found.\n");
-                else { strcpy(instStatus[i], "not active"); printf(saveInstructors() ? "\nStatus updated to 'not active'.\n" : "\nError: could not save data.\n"); }
+                else { strcpy(instructors[i].status, "not active"); printf(saveInstructors() ? "\nStatus updated to 'not active'.\n" : "\nError: could not save data.\n"); }
                 break;
             }
             case 5: break;
@@ -174,7 +195,8 @@ int manageInstructors(void) {
 
 //Manage Students
 static int findStudent(const char *id) {
-    for (int i = 0; i < stuCountAdmin; i++) if (!strcmp(stuIdAdmin[i], id)) return i;
+    for (int i = 0; i < stuCountAdmin; i++)
+        if (!strcmp(students[i].id, id)) return i;
     return -1;
 }
 
@@ -182,7 +204,8 @@ static int saveStudents(void) {
     FILE *fp = fopen(STUDENT_FILE, "w");
     if (!fp) return 0;
     for (int i = 0; i < stuCountAdmin; i++)
-        fprintf(fp, "%s|%s|%s|%s\n", stuIdAdmin[i], stuNameAdmin[i], stuPassAdmin[i], stuStatusAdmin[i]);
+        fprintf(fp, "%s|%s|%s|%s\n", students[i].id, students[i].name,
+                students[i].password, students[i].status);
     fclose(fp);
     return 1;
 }
@@ -196,10 +219,10 @@ static int loadAdminStudents(void) {
         trim(line);
         int n = fields(line, f, 4);
         if (n != 4) continue;
-        strcpy(stuIdAdmin[stuCountAdmin], f[0]);
-        strcpy(stuNameAdmin[stuCountAdmin], f[1]);
-        strcpy(stuPassAdmin[stuCountAdmin], f[2]);
-        strcpy(stuStatusAdmin[stuCountAdmin], f[3]);
+        strcpy(students[stuCountAdmin].id, f[0]);
+        strcpy(students[stuCountAdmin].name, f[1]);
+        strcpy(students[stuCountAdmin].password, f[2]);
+        strcpy(students[stuCountAdmin].status, f[3]);
         stuCountAdmin++;
     }
     fclose(fp);
@@ -238,10 +261,10 @@ int manageStudents(void) {
                     printf("\nName and password are required.\n");
                     break;
                 }
-                strcpy(stuIdAdmin[stuCountAdmin], id);
-                strcpy(stuNameAdmin[stuCountAdmin], name);
-                strcpy(stuPassAdmin[stuCountAdmin], pass);
-                strcpy(stuStatusAdmin[stuCountAdmin], "active");
+                strcpy(students[stuCountAdmin].id, id);
+                strcpy(students[stuCountAdmin].name, name);
+                strcpy(students[stuCountAdmin].password, pass);
+                strcpy(students[stuCountAdmin].status, "active");
                 stuCountAdmin++;
                 if (saveStudents())
                     printf("\nStudent added successfully.\n");
@@ -254,9 +277,9 @@ int manageStudents(void) {
                 printf("\n%-12s %-22s %-16s\n", "ID", "Name", "Status");
                 for (int i = 0; i < stuCountAdmin; i++) {
                     printf("%-12s %-22s %-16s\n",
-                           stuIdAdmin[i],
-                           stuNameAdmin[i],
-                           stuStatusAdmin[i]);
+                           students[i].id,
+                           students[i].name,
+                           students[i].status);
                 }
                 if (!stuCountAdmin)
                     printf("(No student records.)\n");
@@ -283,13 +306,13 @@ int manageStudents(void) {
                 int found = 0;
                 for (int i = 0; i < stuCountAdmin; i++) {
                     int match = (filter == 1) ?
-                        contains(stuIdAdmin[i], needle) :
-                        contains(stuNameAdmin[i], needle);
+                        contains(students[i].id, needle) :
+                        contains(students[i].name, needle);
                     if (match) {
                         printf("%-12s %-22s %-16s\n",
-                               stuIdAdmin[i],
-                               stuNameAdmin[i],
-                               stuStatusAdmin[i]);
+                               students[i].id,
+                               students[i].name,
+                               students[i].status);
                         found++;
                     }
                 }
@@ -305,7 +328,7 @@ int manageStudents(void) {
                     printf("\nStudent ID not found.\n");
                 }
                 else {
-                    strcpy(stuStatusAdmin[i], "not active");
+                    strcpy(students[i].status, "not active");
                     if (saveStudents())
                         printf("\nStatus updated to 'not active'.\n");
                     else
@@ -324,7 +347,6 @@ int manageStudents(void) {
 
 
 //Manage Payments
-
 static int loadAdminPayments(void) {
     FILE *fp = fopen(PAYMENT_FILE, "r");
     char line[200], f[4][100];
@@ -333,10 +355,10 @@ static int loadAdminPayments(void) {
     while (fgets(line, sizeof(line), fp) && payCountAdmin < ADMIN_MAX) {
         trim(line);
         if (fields(line, f, 4) == 4) {
-            strcpy(payStudent[payCountAdmin], f[0]);
-            payClassAdmin[payCountAdmin] = atoi(f[1]);
-            payAmountAdmin[payCountAdmin] = (float)atof(f[2]);
-            strcpy(payDateAdmin[payCountAdmin], f[3]);
+            strcpy(payments[payCountAdmin].studentId, f[0]);
+            payments[payCountAdmin].classId = atoi(f[1]);
+            payments[payCountAdmin].amount = (float)atof(f[2]);
+            strcpy(payments[payCountAdmin].date, f[3]);
             payCountAdmin++;
         }
     }
@@ -359,11 +381,12 @@ int viewPaymentRecords(void) {
             printf("\n%-12s %-12s %-12s %-15s\n", "Student ID", "Class ID", "Amount", "Date");
             int found = 0;
             for (int i = 0; i < payCountAdmin; i++) {
-                int match = choice == 1 || (choice == 2 && contains(payStudent[i], text)) ||
-                            (choice == 3 && payClassAdmin[i] == classFilter) ||
-                            (choice == 4 && contains(payDateAdmin[i], text));
+                int match = choice == 1 || (choice == 2 && contains(payments[i].studentId, text)) ||
+                            (choice == 3 && payments[i].classId == classFilter) ||
+                            (choice == 4 && contains(payments[i].date, text));
                 if (match) {
-                    printf("%-12s %-12d RM%-9.2f %-15s\n", payStudent[i], payClassAdmin[i], payAmountAdmin[i], payDateAdmin[i]);
+                    printf("%-12s %-12d RM%-9.2f %-15s\n", payments[i].studentId,
+                           payments[i].classId, payments[i].amount, payments[i].date);
                     found++;
                 }
             }
