@@ -347,7 +347,6 @@ int manageStudents(void) {
 
 
 //Manage Payments
-
 static int loadAdminPayments(void) {
     FILE *fp = fopen(PAYMENT_FILE, "r");
     char line[200], f[4][100];
