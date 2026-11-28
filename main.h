@@ -9,5 +9,6 @@
 #include "Administrator.h"
 #include "FacilitiesOfficer.h"
 #include "Instructor.h"
+#include "Manager.h"
 
 #endif

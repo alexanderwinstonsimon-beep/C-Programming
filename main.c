@@ -24,7 +24,7 @@ int main() {
         }
         switch (choice) {
             case 1:
-                printf("\n[Manager Menu module not active in this build.]\n");
+                managerMenu();
                 break;
             case 2:
                 administratorMenu();
