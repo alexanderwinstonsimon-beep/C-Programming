@@ -1,9 +1,6 @@
 #include "main.h"
 
 #define ADMIN_MAX 100
-#define INSTRUCTOR_FILE "instructors.txt"
-#define STUDENT_FILE "students.txt"
-#define PAYMENT_FILE "payments.txt"
 
 char instId[ADMIN_MAX][20], instName[ADMIN_MAX][50], instUser[ADMIN_MAX][30];
 char instPass[ADMIN_MAX][30], instRole[ADMIN_MAX][30], instContact[ADMIN_MAX][30];
@@ -56,7 +53,7 @@ static int contains(const char *text, const char *needle) {
 }
 
 static int loadInstructors(void) {
-    FILE *fp = fopen(INSTRUCTOR_FILE, "r");
+    FILE *fp = fopen("instructors.txt", "r");
     char line[300], f[7][100];
     instCount = 0;
     if (!fp) return 0;
@@ -84,7 +81,7 @@ static int loadInstructors(void) {
 }
 
 static int saveInstructors(void) {
-    FILE *fp = fopen(INSTRUCTOR_FILE, "w");
+    FILE *fp = fopen("instructors.txt", "w");
     if (!fp) return 0;
     for (int i = 0; i < instCount; i++)
         fprintf(fp, "%s|%s|%s|%s|%s|%s|%s\n", instId[i], instName[i],
@@ -94,7 +91,7 @@ static int saveInstructors(void) {
 }
 
 static int loadAdminStudents(void) {
-    FILE *fp = fopen(STUDENT_FILE, "r");
+    FILE *fp = fopen("students.txt", "r");
     char line[300], f[6][100];
     stuCountAdmin = 0;
     if (!fp) return 0;
@@ -123,7 +120,7 @@ static int loadAdminStudents(void) {
 }
 
 static int saveStudents(void) {
-    FILE *fp = fopen(STUDENT_FILE, "w");
+    FILE *fp = fopen("students.txt", "w");
     if (!fp) return 0;
     for (int i = 0; i < stuCountAdmin; i++)
         fprintf(fp, "%s|%s|%s|%s|%s|%s\n", stuIdAdmin[i], stuNameAdmin[i],
@@ -133,7 +130,7 @@ static int saveStudents(void) {
 }
 
 static int loadAdminPayments(void) {
-    FILE *fp = fopen(PAYMENT_FILE, "r");
+    FILE *fp = fopen("payments.txt", "r");
     char line[200], f[4][100];
     payCountAdmin = 0;
     if (!fp) return 0;
