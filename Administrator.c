@@ -1,17 +1,17 @@
 #include "main.h"
 
 #define ADMIN_MAX 100
-#define INSTRUCTOR_FILE "instructors.txt"
-#define STUDENT_FILE "students.txt"
-#define PAYMENT_FILE "payments.txt"
+#define INSTRUCTOR_FILE "Text_Files/instructors.txt"
+#define STUDENT_FILE "Text_Files/students.txt"
+#define PAYMENT_FILE "Text_Files/payments.txt"
 
-char instId[ADMIN_MAX][20], instName[ADMIN_MAX][50], instUser[ADMIN_MAX][30];
-char instPass[ADMIN_MAX][30], instRole[ADMIN_MAX][30], instContact[ADMIN_MAX][30];
+char instId[ADMIN_MAX][20], instName[ADMIN_MAX][50];
+char instPass[ADMIN_MAX][30], instContact[ADMIN_MAX][30];
 char instStatus[ADMIN_MAX][20];
 int instCount;
 
-char stuIdAdmin[ADMIN_MAX][20], stuNameAdmin[ADMIN_MAX][50], stuUserAdmin[ADMIN_MAX][30];
-char stuPassAdmin[ADMIN_MAX][30], stuStatusAdmin[ADMIN_MAX][20], stuContactAdmin[ADMIN_MAX][30];
+char stuIdAdmin[ADMIN_MAX][20], stuNameAdmin[ADMIN_MAX][50];
+char stuPassAdmin[ADMIN_MAX][30], stuStatusAdmin[ADMIN_MAX][20];
 int stuCountAdmin;
 
 char payStudent[ADMIN_MAX][20], payDateAdmin[ADMIN_MAX][20];
@@ -55,6 +55,23 @@ static int contains(const char *text, const char *needle) {
     return strstr(a, b) != NULL;
 }
 
+
+//Manage Instructors
+static int saveInstructors(void) {
+    FILE *fp = fopen(INSTRUCTOR_FILE, "w");
+    if (!fp) return 0;
+    for (int i = 0; i < instCount; i++)
+        fprintf(fp, "%s|%s|%s|%s|%s\n", instId[i], instName[i],
+                instPass[i], instContact[i], instStatus[i]);
+    fclose(fp);
+    return 1;
+}
+
+static int findInstructor(const char *id) {
+    for (int i = 0; i < instCount; i++) if (!strcmp(instId[i], id)) return i;
+    return -1;
+}
+
 static int loadInstructors(void) {
     FILE *fp = fopen(INSTRUCTOR_FILE, "r");
     char line[300], f[7][100];
@@ -63,115 +80,18 @@ static int loadInstructors(void) {
     while (fgets(line, sizeof(line), fp) && instCount < ADMIN_MAX) {
         trim(line);
         int n = fields(line, f, 7);
-        if (n < 2) continue;
+        if (n != 5) continue;
+
         strcpy(instId[instCount], f[0]);
         strcpy(instName[instCount], f[1]);
-        if (n >= 7) {
-            strcpy(instUser[instCount], f[2]); strcpy(instPass[instCount], f[3]);
-            strcpy(instRole[instCount], f[4]); strcpy(instContact[instCount], f[5]);
-            strcpy(instStatus[instCount], f[6][0] ? f[6] : "active");
-        } else {
-            strcpy(instUser[instCount], n >= 3 ? f[2] : "");
-            strcpy(instPass[instCount], n >= 4 ? f[3] : "");
-            strcpy(instRole[instCount], n >= 5 ? f[4] : "");
-            strcpy(instContact[instCount], n >= 6 ? f[5] : "");
-            strcpy(instStatus[instCount], "active");
-        }
+        strcpy(instPass[instCount], f[2]);
+        strcpy(instContact[instCount], f[3]);
+        strcpy(instStatus[instCount], f[4]);
+
         instCount++;
     }
     fclose(fp);
     return 1;
-}
-
-static int saveInstructors(void) {
-    FILE *fp = fopen(INSTRUCTOR_FILE, "w");
-    if (!fp) return 0;
-    for (int i = 0; i < instCount; i++)
-        fprintf(fp, "%s|%s|%s|%s|%s|%s|%s\n", instId[i], instName[i],
-                instUser[i], instPass[i], instRole[i], instContact[i], instStatus[i]);
-    fclose(fp);
-    return 1;
-}
-
-static int loadAdminStudents(void) {
-    FILE *fp = fopen(STUDENT_FILE, "r");
-    char line[300], f[6][100];
-    stuCountAdmin = 0;
-    if (!fp) return 0;
-    while (fgets(line, sizeof(line), fp) && stuCountAdmin < ADMIN_MAX) {
-        trim(line);
-        int n = fields(line, f, 6);
-        if (!n) continue;
-        strcpy(stuIdAdmin[stuCountAdmin], f[0]);
-        if (n == 3) {
-            strcpy(stuNameAdmin[stuCountAdmin], f[1]);
-            strcpy(stuUserAdmin[stuCountAdmin], f[1]);
-            strcpy(stuPassAdmin[stuCountAdmin], f[2]);
-            strcpy(stuStatusAdmin[stuCountAdmin], "active");
-            strcpy(stuContactAdmin[stuCountAdmin], "");
-        } else {
-            strcpy(stuNameAdmin[stuCountAdmin], n >= 2 ? f[1] : "");
-            strcpy(stuUserAdmin[stuCountAdmin], n >= 3 ? f[2] : "");
-            strcpy(stuPassAdmin[stuCountAdmin], n >= 4 ? f[3] : "");
-            strcpy(stuStatusAdmin[stuCountAdmin], n >= 5 && f[4][0] ? f[4] : "active");
-            strcpy(stuContactAdmin[stuCountAdmin], n >= 6 ? f[5] : "");
-        }
-        stuCountAdmin++;
-    }
-    fclose(fp);
-    return 1;
-}
-
-static int saveStudents(void) {
-    FILE *fp = fopen(STUDENT_FILE, "w");
-    if (!fp) return 0;
-    for (int i = 0; i < stuCountAdmin; i++)
-        fprintf(fp, "%s|%s|%s|%s|%s|%s\n", stuIdAdmin[i], stuNameAdmin[i],
-                stuUserAdmin[i], stuPassAdmin[i], stuStatusAdmin[i], stuContactAdmin[i]);
-    fclose(fp);
-    return 1;
-}
-
-static int loadAdminPayments(void) {
-    FILE *fp = fopen(PAYMENT_FILE, "r");
-    char line[200], f[4][100];
-    payCountAdmin = 0;
-    if (!fp) return 0;
-    while (fgets(line, sizeof(line), fp) && payCountAdmin < ADMIN_MAX) {
-        trim(line);
-        if (fields(line, f, 4) == 4) {
-            strcpy(payStudent[payCountAdmin], f[0]);
-            payClassAdmin[payCountAdmin] = atoi(f[1]);
-            payAmountAdmin[payCountAdmin] = (float)atof(f[2]);
-            strcpy(payDateAdmin[payCountAdmin], f[3]);
-            payCountAdmin++;
-        }
-    }
-    fclose(fp);
-    return 1;
-}
-
-int administratorLogin(void) {
-    char user[30], pass[30];
-    int attempts = 3;
-    while (attempts > 0) {
-        inputLine("\n===== Administrator Login =====\nUsername: ", user, sizeof(user));
-        inputLine("Password: ", pass, sizeof(pass));
-        if ((strcmp(user, "admin") == 0 &&
-             (!strcmp(pass, "admin123") || !strcmp(pass, "1234") || !strcmp(pass, "123456"))) ||
-            (strcmp(user, "administrator") == 0 && strcmp(pass, "admin123") == 0)) {
-            printf("\nLogin successful. Welcome, Administrator!\n");
-            return 1;
-        }
-        printf("\nInvalid username or password. Attempts left: %d\n", --attempts);
-    }
-    printf("\nToo many failed attempts. Returning to main menu.\n");
-    return 0;
-}
-
-static int findInstructor(const char *id) {
-    for (int i = 0; i < instCount; i++) if (!strcmp(instId[i], id)) return i;
-    return -1;
 }
 
 int manageInstructors(void) {
@@ -183,39 +103,54 @@ int manageInstructors(void) {
         else while (getchar() != '\n');
         switch (choice) {
             case 1: {
-                char id[20], name[50], user[30], pass[30], role[30], contact[30];
+                char id[20], name[50], pass[30], contact[30];
+                if (instCount >= ADMIN_MAX) {
+                    printf("\nMaximum instructor limit reached.\n");
+                    break;
+                }
                 inputLine("\nInstructor ID: ", id, sizeof(id));
-                if (!id[0] || findInstructor(id) >= 0) { printf("\nInvalid or duplicate instructor ID.\n"); break; }
-                inputLine("Name: ", name, sizeof(name)); inputLine("Username: ", user, sizeof(user));
-                inputLine("Password: ", pass, sizeof(pass)); inputLine("Role/Discipline: ", role, sizeof(role));
+                if (!id[0] || findInstructor(id) >= 0) {
+                    printf("\nInvalid or duplicate instructor ID.\n");
+                    break;
+                }
+                inputLine("Name: ", name, sizeof(name));
+                inputLine("Password: ", pass, sizeof(pass));
                 inputLine("Contact: ", contact, sizeof(contact));
-                if (!name[0] || !user[0] || !pass[0]) { printf("\nName, username and password are required.\n"); break; }
-                if (instCount >= ADMIN_MAX) { printf("\nInstructor storage full.\n"); break; }
-                strcpy(instId[instCount], id); strcpy(instName[instCount], name);
-                strcpy(instUser[instCount], user); strcpy(instPass[instCount], pass);
-                strcpy(instRole[instCount], role); strcpy(instContact[instCount], contact);
-                strcpy(instStatus[instCount], "active"); instCount++;
-                printf(saveInstructors() ? "\nInstructor added successfully.\n" : "\nError: could not save instructor data.\n");
+                if (!name[0] || !pass[0]) {
+                    printf("\nName and password are required.\n");
+                    break;
+                }
+                strcpy(instId[instCount], id);
+                strcpy(instName[instCount], name);
+                strcpy(instPass[instCount], pass);
+                strcpy(instContact[instCount], contact);
+                strcpy(instStatus[instCount], "active");
+                instCount++;
+
+                if (saveInstructors())
+                    printf("\nInstructor added successfully.\n");
+                else
+                    printf("\nError: could not save instructor data.\n");
                 break;
             }
             case 2:
-                printf("\n%-12s %-22s %-18s %-16s %-16s\n", "ID", "Name", "Role", "Contact", "Status");
+                printf("\n%-12s %-22s %-16s %-16s\n", "ID", "Name", "Contact", "Status");
                 for (int i = 0; i < instCount; i++)
-                    printf("%-12s %-22s %-18s %-16s %-16s\n", instId[i], instName[i], instRole[i], instContact[i], instStatus[i]);
+                    printf("%-12s %-22s %-16s %-16s\n", instId[i], instName[i], instContact[i], instStatus[i]);
                 if (!instCount) printf("(No instructor records.)\n");
                 break;
             case 3: {
                 int filter; char needle[100];
-                printf("\nSearch by:\n1. ID\n2. Name\n3. Role\n4. Contact\nEnter choice: ");
+                printf("\nSearch by:\n1. ID\n2. Name\n3. Contact\nEnter choice: ");
                 scanf("%d", &filter); while (getchar() != '\n'); inputLine("Search text: ", needle, sizeof(needle));
                 int found = 0;
                 for (int i = 0; i < instCount; i++) {
                     int match = (filter == 1) ? contains(instId[i], needle) :
                                 (filter == 2) ? contains(instName[i], needle) :
-                                (filter == 3) ? contains(instRole[i], needle) :
-                                contains(instContact[i], needle);
+                                (filter == 3) ? contains(instContact[i], needle) :
+                                0;
                     if (match) {
-                        printf("%-12s %-22s %-18s %-16s %-16s\n", instId[i], instName[i], instRole[i], instContact[i], instStatus[i]);
+                        printf("%-12s %-22s %-16s %-16s\n", instId[i], instName[i], instContact[i], instStatus[i]);
                         found++;
                     }
                 }
@@ -236,72 +171,177 @@ int manageInstructors(void) {
     return 0;
 }
 
+
+//Manage Students
 static int findStudent(const char *id) {
     for (int i = 0; i < stuCountAdmin; i++) if (!strcmp(stuIdAdmin[i], id)) return i;
     return -1;
+}
+
+static int saveStudents(void) {
+    FILE *fp = fopen(STUDENT_FILE, "w");
+    if (!fp) return 0;
+    for (int i = 0; i < stuCountAdmin; i++)
+        fprintf(fp, "%s|%s|%s|%s\n", stuIdAdmin[i], stuNameAdmin[i], stuPassAdmin[i], stuStatusAdmin[i]);
+    fclose(fp);
+    return 1;
+}
+
+static int loadAdminStudents(void) {
+    FILE *fp = fopen(STUDENT_FILE, "r");
+    char line[300], f[4][100];
+    stuCountAdmin = 0;
+    if (!fp) return 0;
+    while (fgets(line, sizeof(line), fp) && stuCountAdmin < ADMIN_MAX) {
+        trim(line);
+        int n = fields(line, f, 4);
+        if (n != 4) continue;
+        strcpy(stuIdAdmin[stuCountAdmin], f[0]);
+        strcpy(stuNameAdmin[stuCountAdmin], f[1]);
+        strcpy(stuPassAdmin[stuCountAdmin], f[2]);
+        strcpy(stuStatusAdmin[stuCountAdmin], f[3]);
+        stuCountAdmin++;
+    }
+    fclose(fp);
+    return 1;
 }
 
 int manageStudents(void) {
     int choice;
     loadAdminStudents();
     do {
-        printf("\nManage Students\n1. Add\n2. View\n3. Search\n4. Update Status\n5. Back\nEnter choice: ");
-        if (scanf("%d", &choice) != 1) { while (getchar() != '\n'); choice = 0; }
-        else while (getchar() != '\n');
+        printf("\nManage Students\n");
+        printf("1. Add\n2. View\n3. Search\n4. Update Status\n5. Back\n");
+        printf("Enter choice: ");
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n');
+            choice = 0;
+        }
+        else {
+            while (getchar() != '\n');
+        }
         switch (choice) {
             case 1: {
-                char id[20], name[50], user[30], pass[30], contact[30];
+                char id[20], name[50], pass[30];
+                if (stuCountAdmin >= ADMIN_MAX) {
+                    printf("\nStudent storage full.\n");
+                    break;
+                }
                 inputLine("\nStudent ID: ", id, sizeof(id));
-                if (!id[0] || findStudent(id) >= 0) { printf("\nInvalid or duplicate student ID.\n"); break; }
-                inputLine("Name: ", name, sizeof(name)); inputLine("Username: ", user, sizeof(user));
-                inputLine("Password: ", pass, sizeof(pass)); inputLine("Contact: ", contact, sizeof(contact));
-                if (!name[0] || !user[0] || !pass[0]) { printf("\nName, username and password are required.\n"); break; }
-                if (stuCountAdmin >= ADMIN_MAX) { printf("\nStudent storage full.\n"); break; }
-                strcpy(stuIdAdmin[stuCountAdmin], id); strcpy(stuNameAdmin[stuCountAdmin], name);
-                strcpy(stuUserAdmin[stuCountAdmin], user); strcpy(stuPassAdmin[stuCountAdmin], pass);
-                strcpy(stuStatusAdmin[stuCountAdmin], "active"); strcpy(stuContactAdmin[stuCountAdmin], contact);
+                if (!id[0] || findStudent(id) >= 0) {
+                    printf("\nInvalid or duplicate student ID.\n");
+                    break;
+                }
+                inputLine("Name: ", name, sizeof(name));
+                inputLine("Password: ", pass, sizeof(pass));
+                if (!name[0] || !pass[0]) {
+                    printf("\nName and password are required.\n");
+                    break;
+                }
+                strcpy(stuIdAdmin[stuCountAdmin], id);
+                strcpy(stuNameAdmin[stuCountAdmin], name);
+                strcpy(stuPassAdmin[stuCountAdmin], pass);
+                strcpy(stuStatusAdmin[stuCountAdmin], "active");
                 stuCountAdmin++;
-                printf(saveStudents() ? "\nStudent added successfully.\n" : "\nError: could not save student data.\n");
+                if (saveStudents())
+                    printf("\nStudent added successfully.\n");
+                else
+                    printf("\nError: could not save student data.\n");
+
                 break;
             }
             case 2:
-                printf("\n%-12s %-22s %-18s %-16s %-16s\n", "ID", "Name", "Username", "Status", "Contact");
-                for (int i = 0; i < stuCountAdmin; i++)
-                    printf("%-12s %-22s %-18s %-16s %-16s\n", stuIdAdmin[i], stuNameAdmin[i],
-                           stuUserAdmin[i], stuStatusAdmin[i], stuContactAdmin[i]);
-                if (!stuCountAdmin) printf("(No student records.)\n");
+                printf("\n%-12s %-22s %-16s\n", "ID", "Name", "Status");
+                for (int i = 0; i < stuCountAdmin; i++) {
+                    printf("%-12s %-22s %-16s\n",
+                           stuIdAdmin[i],
+                           stuNameAdmin[i],
+                           stuStatusAdmin[i]);
+                }
+                if (!stuCountAdmin)
+                    printf("(No student records.)\n");
+
                 break;
             case 3: {
-                int filter; char needle[100];
-                printf("\nSearch by:\n1. ID\n2. Name\n3. Username\n4. Contact\nEnter choice: ");
-                scanf("%d", &filter); while (getchar() != '\n'); inputLine("Search text: ", needle, sizeof(needle));
+                int filter;
+                char needle[100];
+                printf("\nSearch by:\n");
+                printf("1. ID\n");
+                printf("2. Name\n");
+                printf("Enter choice: ");
+                if (scanf("%d", &filter) != 1) {
+                    while (getchar() != '\n');
+                    printf("\nInvalid search option.\n");
+                    break;
+                }
+                while (getchar() != '\n');
+                if (filter < 1 || filter > 2) {
+                    printf("\nInvalid search option.\n");
+                    break;
+                }
+                inputLine("Search text: ", needle, sizeof(needle));
                 int found = 0;
                 for (int i = 0; i < stuCountAdmin; i++) {
-                    int match = (filter == 1) ? contains(stuIdAdmin[i], needle) :
-                                (filter == 2) ? contains(stuNameAdmin[i], needle) :
-                                (filter == 3) ? contains(stuUserAdmin[i], needle) :
-                                contains(stuContactAdmin[i], needle);
+                    int match = (filter == 1) ?
+                        contains(stuIdAdmin[i], needle) :
+                        contains(stuNameAdmin[i], needle);
                     if (match) {
-                        printf("%-12s %-22s %-18s %-16s %-16s\n", stuIdAdmin[i], stuNameAdmin[i],
-                               stuUserAdmin[i], stuStatusAdmin[i], stuContactAdmin[i]);
+                        printf("%-12s %-22s %-16s\n",
+                               stuIdAdmin[i],
+                               stuNameAdmin[i],
+                               stuStatusAdmin[i]);
                         found++;
                     }
                 }
-                if (!found) printf("(No matching students.)\n");
+                if (!found)
+                    printf("(No matching students.)\n");
                 break;
             }
             case 4: {
-                char id[20]; inputLine("\nStudent ID to deactivate: ", id, sizeof(id));
+                char id[20];
+                inputLine("\nStudent ID to deactivate: ", id, sizeof(id));
                 int i = findStudent(id);
-                if (i < 0) printf("\nStudent ID not found.\n");
-                else { strcpy(stuStatusAdmin[i], "not active"); printf(saveStudents() ? "\nStatus updated to 'not active'.\n" : "\nError: could not save data.\n"); }
+                if (i < 0) {
+                    printf("\nStudent ID not found.\n");
+                }
+                else {
+                    strcpy(stuStatusAdmin[i], "not active");
+                    if (saveStudents())
+                        printf("\nStatus updated to 'not active'.\n");
+                    else
+                        printf("\nError: could not save data.\n");
+                }
                 break;
             }
-            case 5: break;
-            default: printf("\nInvalid choice.\n");
+            case 5:
+                break;
+            default:
+                printf("\nInvalid choice.\n");
         }
     } while (choice != 5);
     return 0;
+}
+
+
+//Manage Payments
+
+static int loadAdminPayments(void) {
+    FILE *fp = fopen(PAYMENT_FILE, "r");
+    char line[200], f[4][100];
+    payCountAdmin = 0;
+    if (!fp) return 0;
+    while (fgets(line, sizeof(line), fp) && payCountAdmin < ADMIN_MAX) {
+        trim(line);
+        if (fields(line, f, 4) == 4) {
+            strcpy(payStudent[payCountAdmin], f[0]);
+            payClassAdmin[payCountAdmin] = atoi(f[1]);
+            payAmountAdmin[payCountAdmin] = (float)atof(f[2]);
+            strcpy(payDateAdmin[payCountAdmin], f[3]);
+            payCountAdmin++;
+        }
+    }
+    fclose(fp);
+    return 1;
 }
 
 int viewPaymentRecords(void) {
@@ -333,12 +373,31 @@ int viewPaymentRecords(void) {
     return 0;
 }
 
+int administratorLogin(void) {
+    char user[30], pass[30];
+    int attempts = 3;
+    while (attempts > 0) {
+        inputLine("\n===== Administrator Login =====\nUsername: ", user, sizeof(user));
+        inputLine("Password: ", pass, sizeof(pass));
+        if (strcmp(user, "Alexander") == 0 && !strcmp(pass, "admin123")) {
+            printf("\nLogin successful. Welcome, Administrator!\n");
+            return 1;
+        }
+        printf("\nInvalid username or password. Attempts left: %d\n", --attempts);
+    }
+    printf("\nToo many failed attempts. Returning to main menu.\n");
+    return 0;
+}
+
 int administratorMenu(void) {
     int choice;
     if (!administratorLogin()) return 0;
     do {
         printf("\nAdministrator Menu\n1. Manage Instructors\n2. Manage Students\n3. Payment Records\n4. Logout\nEnter choice: ");
-        if (scanf("%d", &choice) != 1) { while (getchar() != '\n'); choice = 0; }
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n');
+            choice = 0;
+        }
         else while (getchar() != '\n');
         switch (choice) {
             case 1: manageInstructors(); break;

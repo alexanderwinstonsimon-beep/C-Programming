@@ -5,10 +5,10 @@
 #include "main.h"
 #define MAX 50
 
-#define STUDENT_FILE "students.txt"
-#define CLASS_FILE   "classes.txt"
-#define PAYMENT_FILE "payments.txt"
-#define RATING_FILE  "ratings.txt"
+#define STUDENT_FILE "Text_Files/students.txt"
+#define CLASS_FILE   "Text_Files/classes.txt"
+#define PAYMENT_FILE "Text_Files/payments.txt"
+#define RATING_FILE  "Text_Files/ratings.txt"
 
 char stuId[MAX][20];
 char stuUser[MAX][30];
