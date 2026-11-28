@@ -5,19 +5,16 @@
 struct Class
 {
     int classID;
-    char martialArt[30];
+    char subject[50];
     char instructorName[50];
-    char date[20];
-    char time[20];
-    int availableSlots;
+    char time[50];
+    char bookedBy[20];
 };
 
 struct FacilityProblem
 {
     int problemID;
-    char facility[50];
     char description[150];
-    char date[20];
     char status[20];
 };
 
@@ -41,6 +38,62 @@ void addFacilityProblem();
 void viewFacilityProblems();
 
 void viewInstructorRating();
+char currentInstructorId[20];
+char currentInstructorName[50];
+
+int instructorLogin(void)
+{
+    char nameInput[50], pass[30];
+    char line[300];
+    int attempts = 3;
+
+    while (attempts > 0)
+    {
+        printf("\n===== Instructor Login =====\n");
+        printf("Name: ");
+        scanf(" %49[^\n]", nameInput);
+        printf("Password: ");
+        scanf("%29s", pass);
+
+        FILE *fp = fopen("Text_Files/instructors.txt", "r");
+        if (fp == NULL)
+        {
+            printf("\nUnable to open instructor records.\n");
+            return 0;
+        }
+
+        while (fgets(line, sizeof(line), fp))
+        {
+            char id[20], name[50], password[30], contact[30], status[20];
+
+            if (sscanf(line, "%19[^|]|%49[^|]|%29[^|]|%29[^|]|%19[^\r\n]",
+                       id, name, password, contact, status) == 5 &&
+                strcmp(nameInput, name) == 0 &&
+                strcmp(pass, password) == 0)
+            {
+                fclose(fp);
+                if (strcmp(status, "active") != 0)
+                {
+                    printf("\nThis instructor account is not active.\n");
+                    return 0;
+                }
+
+                strcpy(currentInstructorId, id);
+                strcpy(currentInstructorName, name);
+                printf("\nLogin successful. Welcome, %s (ID: %s)!\n",
+                       name, id);
+                return 1;
+            }
+        }
+
+        fclose(fp);
+        attempts--;
+        printf("\nInvalid username or password. Attempts left: %d\n", attempts);
+    }
+
+    printf("\nToo many failed attempts. Returning to main menu.\n");
+    return 0;
+}
 
 void readLine(char text[], int size)
 {
@@ -50,6 +103,8 @@ void readLine(char text[], int size)
 void instructorMenu()
 {
     int choice;
+    if (!instructorLogin())
+        return;
 
     while (1)
     {
@@ -137,34 +192,29 @@ void addClassSchedule()
     printf("\nEnter Class ID: ");
     scanf("%d", &c.classID);
 
-    printf("Enter Martial Art: ");
-    scanf(" %29[^\n]", c.martialArt);
+    printf("Enter Subject: ");
+    scanf(" %49[^\n]", c.subject);
 
-    printf("Enter Instructor Name: ");
-    scanf(" %49[^\n]", c.instructorName);
-
-    printf("Enter Date: ");
-    scanf(" %19[^\n]", c.date);
+    strcpy(c.instructorName, currentInstructorName);
+    printf("Instructor: %s\n", c.instructorName);
 
     printf("Enter Time: ");
-    scanf(" %19[^\n]", c.time);
+    scanf(" %49[^\n]", c.time);
 
-    printf("Enter Available Slots: ");
-    scanf("%d", &c.availableSlots);
+    strcpy(c.bookedBy, "-");
 
     // Check duplicate Class ID
-    fp = fopen("class_schedule.txt", "r");
+    fp = fopen("Text_Files/classes.txt", "r");
 
     if (fp != NULL)
     {
         while (fscanf(fp,
-            "%d|%29[^|]|%49[^|]|%19[^|]|%19[^|]|%d\n",
+            "%d|%49[^|]|%49[^|]|%49[^|]|%19[^\n]\n",
             &temp.classID,
-            temp.martialArt,
+            temp.subject,
             temp.instructorName,
-            temp.date,
             temp.time,
-            &temp.availableSlots) == 6)
+            temp.bookedBy) == 5)
         {
             if (temp.classID == c.classID)
             {
@@ -183,7 +233,7 @@ void addClassSchedule()
     }
 
     // Save new class schedule
-    fp = fopen("class_schedule.txt", "a");
+    fp = fopen("Text_Files/classes.txt", "a");
 
     if (fp == NULL)
     {
@@ -191,13 +241,12 @@ void addClassSchedule()
         return;
     }
 
-    fprintf(fp, "%d|%s|%s|%s|%s|%d\n",
+    fprintf(fp, "%d|%s|%s|%s|%s\n",
         c.classID,
-        c.martialArt,
+        c.subject,
         c.instructorName,
-        c.date,
         c.time,
-        c.availableSlots);
+        c.bookedBy);
 
     fclose(fp);
 
@@ -209,7 +258,7 @@ void viewClassSchedule()
     FILE *fp;
     struct Class c;
 
-    fp = fopen("class_schedule.txt", "r");
+    fp = fopen("Text_Files/classes.txt", "r");
 
     if (fp == NULL)
     {
@@ -218,20 +267,20 @@ void viewClassSchedule()
     }
 
     printf("\n========== CLASS SCHEDULE ==========\n");
-    printf("%-10s %-15s %-30s %-20s %-10s %-15s\n", "Class ID", "Martial Art", "Instructor Name", "Date", "Time", "Available Slots");
-    printf("---------------------------------------------------------------------------------------------------------------\n");
+    printf("%-10s %-25s %-25s %-20s %-15s\n",
+           "Class ID", "Subject", "Instructor", "Time", "Booked By");
+    printf("------------------------------------------------------------------------------------------\n");
 
     while (fscanf(fp,
-        "%d|%29[^|]|%49[^|]|%19[^|]|%19[^|]|%d\n",
+        "%d|%49[^|]|%49[^|]|%49[^|]|%19[^\n]\n",
         &c.classID,
-        c.martialArt,
+        c.subject,
         c.instructorName,
-        c.date,
         c.time,
-        &c.availableSlots) == 6)
+        c.bookedBy) == 5)
     {
-        printf("%-10s %-15s %-30s %-20s %-10s %-15s\n",
-            c.classID, c.martialArt, c.instructorName, c.date, c.time, c.availableSlots);
+        printf("%-10d %-25s %-25s %-20s %-15s\n",
+            c.classID, c.subject, c.instructorName, c.time, c.bookedBy);
     }
 
     fclose(fp);
@@ -248,7 +297,7 @@ void searchClassSchedule()
     printf("\nEnter Class ID to search: ");
     scanf("%d", &searchID);
 
-    fp = fopen("class_schedule.txt", "r");
+    fp = fopen("Text_Files/classes.txt", "r");
 
     if (fp == NULL)
     {
@@ -257,24 +306,22 @@ void searchClassSchedule()
     }
 
     while (fscanf(fp,
-        "%d|%29[^|]|%49[^|]|%19[^|]|%19[^|]|%d\n",
+        "%d|%49[^|]|%49[^|]|%49[^|]|%19[^\n]\n",
         &c.classID,
-        c.martialArt,
+        c.subject,
         c.instructorName,
-        c.date,
         c.time,
-        &c.availableSlots) == 6)
+        c.bookedBy) == 5)
     {
         if (searchID == c.classID)
         {
             printf("\nClass Found!\n");
 
             printf("Class ID: %d\n", c.classID);
-            printf("Martial Art: %s\n", c.martialArt);
+            printf("Subject: %s\n", c.subject);
             printf("Instructor: %s\n", c.instructorName);
-            printf("Date: %s\n", c.date);
             printf("Time: %s\n", c.time);
-            printf("Available Slots: %d\n", c.availableSlots);
+            printf("Booked By: %s\n", c.bookedBy);
 
             found = 1;
             break;
@@ -292,9 +339,7 @@ void updateClassSchedule()
 {
     FILE *fp;
     FILE *tempFile;
-
     struct Class c;
-
     int searchID;
     int found = 0;
 
@@ -302,7 +347,7 @@ void updateClassSchedule()
     scanf("%d", &searchID);
     getchar(); // Clear the newline character from the input buffer
 
-    fp = fopen("class_schedule.txt", "r");
+    fp = fopen("Text_Files/classes.txt", "r");
 
     if (fp == NULL)
     {
@@ -310,7 +355,7 @@ void updateClassSchedule()
         return;
     }
 
-    tempFile = fopen("class_temp.txt", "w");
+    tempFile = fopen("Text_Files/class_temp.txt", "w");
 
     if (tempFile == NULL)
     {
@@ -320,52 +365,33 @@ void updateClassSchedule()
     }
 
     while (fscanf(fp,
-        "%d|%29[^|]|%49[^|]|%19[^|]|%19[^|]|%d\n",
+        "%d|%49[^|]|%49[^|]|%49[^|]|%19[^\n]\n",
         &c.classID,
-        c.martialArt,
+        c.subject,
         c.instructorName,
-        c.date,
         c.time,
-        &c.availableSlots) == 6)
+        c.bookedBy) == 5)
     {
         if (searchID == c.classID)
         {
             found = 1;
-
             printf("\nClass Found! Enter New Information.\n");
 
-            printf("Enter New Martial Art: ");
-            readLine(c.martialArt, sizeof(c.martialArt));
-
-            printf("Enter New Instructor Name: ");
-            readLine(c.instructorName, sizeof(c.instructorName));
-
-            printf("Enter New Date: ");
-            readLine(c.date, sizeof(c.date));
+            printf("Enter New Subject: ");
+            readLine(c.subject, sizeof(c.subject));
 
             printf("Enter New Time: ");
             readLine(c.time, sizeof(c.time));
 
-            printf("Enter New Available Slots: ");
-            scanf("%d", &c.availableSlots);     
-
-            if (c.availableSlots < 0)
-            {
-                printf("Invalid slots. Keeping original record.\n");
-                fclose(fp);
-                fclose(tempFile);
-                remove("class_temp.txt");
-                return;
-            }
+            strcpy(c.instructorName, currentInstructorName);
         }
 
-        fprintf(tempFile, "%d|%s|%s|%s|%s|%d\n",
+        fprintf(tempFile, "%d|%s|%s|%s|%s\n",
                 c.classID,
-                c.martialArt,
+                c.subject,
                 c.instructorName,
-                c.date,
                 c.time,
-                c.availableSlots);
+                c.bookedBy);
     }
 
     fclose(fp);
@@ -373,14 +399,14 @@ void updateClassSchedule()
 
     if (found == 1)
     {
-        remove("class_schedule.txt");
-        rename("class_temp.txt", "class_schedule.txt");
+        remove("Text_Files/classes.txt");
+        rename("Text_Files/class_temp.txt", "Text_Files/classes.txt");
 
         printf("\nClass Schedule Updated Successfully!\n");
     }
     else
     {
-        remove("class_temp.txt");
+        remove("Text_Files/class_temp.txt");
         printf("\nClass ID not found!\n");
     }
 }
@@ -433,18 +459,15 @@ void addFacilityProblem()
     scanf("%d", &p.problemID);
     getchar(); // Clear the newline character from the input buffer
 
-    fp = fopen("facility_problem.txt", "r");
+    fp = fopen("facilityissues.txt", "r");
 
     if (fp != NULL)
     {
-        while (fscanf(fp,
-            "%d|%49[^|]|%149[^|]|%19[^|]|%19[^\n]\n",
-            &temp.problemID,
-            temp.facility,
-            temp.description,
-            temp.date,
-            temp.status) == 5)
+        char line[200];
+        while (fgets(line, sizeof(line), fp))
         {
+            if (sscanf(line, "%d,", &temp.problemID) != 1)
+                continue;
             if (p.problemID == temp.problemID)
             {
                 duplicate = 1;
@@ -461,18 +484,12 @@ void addFacilityProblem()
         return;
     }
 
-    printf("Enter Facility Name: ");
-    readLine(p.facility, sizeof(p.facility));
-
     printf("Enter Problem Description: ");
     readLine(p.description, sizeof(p.description));
 
-    printf("Enter Date (DD/MM/YYYY): ");
-    readLine(p.date, sizeof(p.date));
+    strcpy(p.status, "INCOMPLETE");
 
-    strcpy(p.status, "Pending");
-
-    fp = fopen("facility_problem.txt", "a");
+    fp = fopen("facilityissues.txt", "a");
 
     if (fp == NULL)
     {
@@ -480,12 +497,8 @@ void addFacilityProblem()
         return;
     }
 
-    fprintf(fp, "%d|%s|%s|%s|%s\n",
-            p.problemID,
-            p.facility,
-            p.description,
-            p.date,
-            p.status);
+    fprintf(fp, "%d, %s, %s\n",
+            p.problemID, p.description, p.status);
 
     fclose(fp);
 
@@ -498,7 +511,7 @@ void viewFacilityProblems()
 
     struct FacilityProblem p;
 
-    fp = fopen("facility_problem.txt", "r");
+    fp = fopen("facilityissues.txt", "r");
 
     if (fp == NULL)
     {
@@ -508,21 +521,18 @@ void viewFacilityProblems()
 
     printf("\n=============== FACILITY PROBLEMS ===============\n");
 
-    while (fscanf(fp,
-        "%d|%49[^|]|%149[^|]|%19[^|]|%19[^\n]\n",
-        &p.problemID,
-        p.facility,
-        p.description,
-        p.date,
-        p.status) == 5)
+    char line[200];
+    while (fgets(line, sizeof(line), fp))
     {
-        printf("\nProblem ID: %d\n", p.problemID);
-        printf("Facility: %s\n", p.facility);
-        printf("Description: %s\n", p.description);
-        printf("Date: %s\n", p.date);
-        printf("Status: %s\n", p.status);
+        if (sscanf(line, "%d, %149[^,], %19[^\n]",
+                   &p.problemID, p.description, p.status) == 3)
+        {
+            printf("\nProblem ID: %d\n", p.problemID);
+            printf("Description: %s\n", p.description);
+            printf("Status: %s\n", p.status);
 
-        printf("------------------------------------\n");
+            printf("------------------------------------\n");
+        }
     }
 
     fclose(fp);
@@ -534,13 +544,11 @@ void viewFacilityProblems()
 void viewInstructorRating()
 {
     FILE *fp;
-
     struct Rating r;
-
     int count = 0;
     float total = 0;
 
-    fp = fopen("ratings.txt", "r");
+    fp = fopen("Text_Files/ratings.txt", "r");
 
     if (fp == NULL)
     {
@@ -551,16 +559,14 @@ void viewInstructorRating()
     printf("\n=============== INSTRUCTOR RATINGS ===============\n");
 
     while (fscanf(fp,
-        "%d|%49[^|]|%49[^|]|%f|%149[^\n]\n",
-        &r.ratingID,
-        r.instructorName,
+        "%49[^|]|%d|%f|%149[^\n]\n",
         r.studentName,
+        &r.ratingID,
         &r.ratingScore,
-        r.feedback) == 5)
+        r.feedback) == 4)
     {
-        printf("\nRating ID: %d\n", r.ratingID);
-        printf("Instructor: %s\n", r.instructorName);
-        printf("Student: %s\n", r.studentName);
+        printf("\nStudent: %s\n", r.studentName);
+        printf("Class ID: %d\n", r.ratingID);
         printf("Rating: %.1f / 5.0\n", r.ratingScore);
         printf("Feedback: %s\n", r.feedback);
 
@@ -585,4 +591,5 @@ void viewInstructorRating()
 
 int mains(){
     instructorMenu();
+    return 0;
 }
