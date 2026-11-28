@@ -93,18 +93,20 @@ int loadStudents(){
             start = pipe + 1;
         }
         strcpy(stuId[stuCount], fields[0]);
-        if (count == 3) {
-            strcpy(stuName[stuCount], fields[1]);
-            strcpy(stuUser[stuCount], fields[1]);
-            strcpy(stuPass[stuCount], fields[2]);
-            strcpy(stuStatus[stuCount], "active");
-            strcpy(stuContact[stuCount], "");
+        strcpy(stuName[stuCount], fields[1]);
+        strcpy(stuUser[stuCount], fields[1]); 
+        strcpy(stuPass[stuCount], fields[2]); 
+
+        if (count >= 4 && fields[3][0] != '\0') {
+            strcpy(stuStatus[stuCount], fields[3]);
         } else {
-            strcpy(stuName[stuCount], count >= 2 ? fields[1] : "");
-            strcpy(stuUser[stuCount], count >= 3 ? fields[2] : "");
-            strcpy(stuPass[stuCount], count >= 4 ? fields[3] : "");
-            strcpy(stuStatus[stuCount], count >= 5 && fields[4][0] ? fields[4] : "active");
-            strcpy(stuContact[stuCount], count >= 6 ? fields[5] : "");
+            strcpy(stuStatus[stuCount], "active");
+        }
+
+        if (count >= 5) {
+            strcpy(stuContact[stuCount], fields[4]);
+        } else {
+            strcpy(stuContact[stuCount], "");
         }
         stuCount++;
     }
@@ -267,7 +269,12 @@ int studentMenu(){
         printf("4. Exit\n");
 
         printf("\nEnter choice: ");
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n'); 
+            choice = -1;   
+        } else {
+            while (getchar() != '\n');
+        }
         switch(choice){
             case 1: 
                 bookClass(); 
@@ -299,7 +306,12 @@ int bookClass(){
         printf("\n1. Book\n2. View\n3. Reschedule\n4. Cancel\n5. Back\n");
 
         printf("\nEnter choice: ");
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n'); 
+            choice = -1;   
+        } else {
+            while (getchar() != '\n');
+        }
         switch(choice){
             case 1: {
                 int id, found = -1;
@@ -457,7 +469,12 @@ int payment(){
         printf("\n1. Make Payment\n2. View Payment History\n3. Back\n");
 
         printf("\nEnter choice: ");
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n'); 
+            choice = -1;   
+        } else {
+            while (getchar() != '\n');
+        }
         switch(choice){
             case 1: {
                 int id, found = 0;
@@ -561,7 +578,12 @@ int rating(){
         printf("\n1. Rate Instructors\n2. View Ratings\n3. Back\n");
 
         printf("\nEnter choice: ");
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n'); 
+            choice = -1;   
+        } else {
+            while (getchar() != '\n');
+        }
         switch(choice){
             case 1: {
                 int id, score, found = 0;
