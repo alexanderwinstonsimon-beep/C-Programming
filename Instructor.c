@@ -459,7 +459,7 @@ void addFacilityProblem()
     scanf("%d", &p.problemID);
     getchar(); // Clear the newline character from the input buffer
 
-    fp = fopen("facilityissues.txt", "r");
+    fp = fopen("Text_Files/facilityissues.txt", "r");
 
     if (fp != NULL)
     {
@@ -489,7 +489,7 @@ void addFacilityProblem()
 
     strcpy(p.status, "INCOMPLETE");
 
-    fp = fopen("facilityissues.txt", "a");
+    fp = fopen("Text_Files/facilityissues.txt", "a");
 
     if (fp == NULL)
     {
@@ -511,7 +511,7 @@ void viewFacilityProblems()
 
     struct FacilityProblem p;
 
-    fp = fopen("facilityissues.txt", "r");
+    fp = fopen("Text_Files/facilityissues.txt", "r");
 
     if (fp == NULL)
     {

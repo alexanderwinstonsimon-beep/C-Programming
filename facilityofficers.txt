@@ -1,3 +1,0 @@
-John, 123456
-Mary, abc123
-Silver, 2468
