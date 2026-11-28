@@ -14,8 +14,13 @@ int main() {
         printf("| 6. Exit Application                   |\n");
         printf("=========================================\n");
         printf("Enter your choice: ");
-        scanf("%d", &choice);
-        while (getchar() != '\n');
+        
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n'); 
+            choice = -1;   
+        } else {
+            while (getchar() != '\n');
+        }
         
         switch (choice) {
             case 1:
