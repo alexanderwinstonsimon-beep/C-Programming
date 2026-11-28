@@ -540,7 +540,7 @@ void viewInstructorRating()
     int count = 0;
     float total = 0;
 
-    fp = fopen("instructor_rating.txt", "r");
+    fp = fopen("ratings.txt", "r");
 
     if (fp == NULL)
     {
@@ -583,6 +583,6 @@ void viewInstructorRating()
 }
 
 
-int main(){
+int mains(){
     instructorMenu();
 }

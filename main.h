@@ -8,5 +8,6 @@
 #include "Student.h"
 #include "Administrator.h"
 #include "FacilitiesOfficer.h"
+#include "Instructor.h"
 
 #endif
