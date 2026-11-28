@@ -218,7 +218,7 @@ void viewClassSchedule()
     }
 
     printf("\n========== CLASS SCHEDULE ==========\n");
-    printf("%-10s\t %-30s\t %-50s\t %-20s\t %-20s\t %-15s\n", "Class ID", "Martial Art", "Instructor Name", "Date", "Time", "Available Slots");
+    printf("%-10s %-15s %-30s %-20s %-10s %-15s\n", "Class ID", "Martial Art", "Instructor Name", "Date", "Time", "Available Slots");
     printf("---------------------------------------------------------------------------------------------------------------\n");
 
     while (fscanf(fp,
@@ -230,7 +230,7 @@ void viewClassSchedule()
         c.time,
         &c.availableSlots) == 6)
     {
-        printf("%-10d\t %-30s\t %-50s\t %-20s\t %-20s\t %-15d\n",
+        printf("%-10s %-15s %-30s %-20s %-10s %-15s\n",
             c.classID, c.martialArt, c.instructorName, c.date, c.time, c.availableSlots);
     }
 
