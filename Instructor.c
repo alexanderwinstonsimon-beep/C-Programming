@@ -581,8 +581,3 @@ void viewInstructorRating()
 
     fclose(fp);
 }
-
-
-int main(){
-    instructorMenu();
-}

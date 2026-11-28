@@ -27,9 +27,9 @@ int main() {
             case 3:
                 studentMenu();
                 break;
-            case 4:
-                instructorMenu();
-                break;
+            // case 4:
+            //     instructorMenu();
+            //     break;
             case 5:
                 facilitiesofficermenu();
                 break;

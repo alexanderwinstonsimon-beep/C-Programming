@@ -157,9 +157,7 @@ int administratorLogin(void) {
     while (attempts > 0) {
         inputLine("\n===== Administrator Login =====\nUsername: ", user, sizeof(user));
         inputLine("Password: ", pass, sizeof(pass));
-        if ((strcmp(user, "admin") == 0 &&
-             (!strcmp(pass, "admin123") || !strcmp(pass, "1234") || !strcmp(pass, "123456"))) ||
-            (strcmp(user, "administrator") == 0 && strcmp(pass, "admin123") == 0)) {
+        if (strcmp(user, "Alexander") == 0 && !strcmp(pass, "admin123")) {
             printf("\nLogin successful. Welcome, Administrator!\n");
             return 1;
         }
@@ -338,7 +336,10 @@ int administratorMenu(void) {
     if (!administratorLogin()) return 0;
     do {
         printf("\nAdministrator Menu\n1. Manage Instructors\n2. Manage Students\n3. Payment Records\n4. Logout\nEnter choice: ");
-        if (scanf("%d", &choice) != 1) { while (getchar() != '\n'); choice = 0; }
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n');
+            choice = 0;
+        }
         else while (getchar() != '\n');
         switch (choice) {
             case 1: manageInstructors(); break;
