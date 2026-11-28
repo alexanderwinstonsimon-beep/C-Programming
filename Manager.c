@@ -7,32 +7,30 @@
 #define MAX_STAFF 200
 #define MAX_REG 1000
 #define MAX_ID 999999999
-#define ADMIN_FILE "admin.txt"
-#define INSTRUCTOR_FILE "instructor.txt"
-#define REG_FILE "registration.txt"
-
-// ...everything after main(), from "input helpers" down...
+#define MANAGER_FILE "Text_Files/manager.txt"
+#define ADMIN_FILE "Text_Files/admin.txt"
+#define INSTRUCTOR_FILE "Text_Files/instructors.txt"
+#define PAYMENT_FILE "Text_Files/payments.txt"
 
 int managerMenu(){
 int choice;
-int loggedIn = 0;        // 1 after a successful login
+int loggedIn = 0;
 
 do{
-    printf("\n=============================\n");
-    printf("|     MANAGER MAIN MENU     |\n");
-    printf("| 1. manager login          |\n");
-    printf("| 2. add admin              |\n");
-    printf("| 3. view admins            |\n");
-    printf("| 4. search admin           |\n");
-    printf("| 5. update admin status    |\n");
-    printf("| 6. staff report           |\n");
-    printf("| 7. revenue report         |\n");
-    printf("| 8. logout                 |\n");
-    printf("| 0. exit                   |\n");
-    printf("=============================\n");
-    choice = readInt(" Enter your choice (0-8): ", 0, 8);
+    printf("\nManager Management System");
+    printf("\nLogged in: %s", loggedIn ? "Yes" : "No");
+    printf("\n---------------------------------\n");
+    printf("1. Manager Login\n");
+    printf("2. Add Administrator\n");
+    printf("3. View Administrators\n");
+    printf("4. Search Administrators\n");
+    printf("5. Update Administrator Status\n");
+    printf("6. Staff Report\n");
+    printf("7. Revenue Report\n");
+    printf("8. Logout\n");
+    printf("0. Exit\n");
+    choice = readInt("\nEnter choice (0-8): ", 0, 8);
 
-    // options 2-7 need a login first
     if (choice >= 2 && choice <= 7 && !loggedIn) {
         printf("Please login first (option 1)\n");
         continue;
@@ -81,9 +79,6 @@ return 0;
 
 }
 
-//input helpers// 
-
-// Reads a whole line, accepts only an int between min and max.
 int readInt(const char *prompt, int min, int max) {
 char buffer[100];
 int value;
@@ -94,7 +89,7 @@ while (1) {
         return min;
     }
     if (buffer[0] == '\n') {
-        continue;                    // skip blank line
+        continue;
     }
     if (sscanf(buffer, "%d", &value) == 1 && value >= min && value <= max) {
         return value;
@@ -104,7 +99,6 @@ while (1) {
 
 }
 
-// Reads a whole line (spaces allowed) into dest, repeats until it is not empty.
 void readString(const char *prompt, char *dest, int size) {
 int c;
 
@@ -114,7 +108,7 @@ while (1) {
         dest[0] = '\0';
         return;
     }
-    if (strchr(dest, '\n') == NULL) {            // line was longer than size
+    if (strchr(dest, '\n') == NULL) {
         while ((c = getchar()) != '\n' && c != EOF);
     }
     dest[strcspn(dest, "\n")] = '\0';
@@ -125,51 +119,98 @@ while (1) {
 
 }
 
-//login & logout// 
+static int parseManagerCredential(const char *line, int *id, char password[50]) {
+    return sscanf(line, "%d|%49[^\r\n]", id, password) == 2 ||
+           sscanf(line, "%d %49s", id, password) == 2;
+}
+
+static int createManagerAccount(void) {
+int id;
+char password[50];
+
+printf("\nNo Manager account found. Set up the first account.\n");
+id = readInt("Choose Manager ID: ", 1, MAX_ID);
+do {
+    readString("Create password: ", password, sizeof(password));
+    if (strchr(password, '|') != NULL) {
+        printf("Password cannot contain '|'\n");
+    }
+} while (strchr(password, '|') != NULL);
+
+FILE *fp = fopen(MANAGER_FILE, "w");
+if (fp == NULL) {
+    printf("Unable to create %s\n", MANAGER_FILE);
+    return 0;
+}
+int writeFailed = fprintf(fp, "%d|%s\n", id, password) < 0;
+int closeFailed = fclose(fp) != 0;
+if (writeFailed || closeFailed) {
+    printf("Unable to save Manager credentials.\n");
+    return 0;
+}
+printf("Manager account created. Login successful.\n");
+return 1;
+}
 
 int managerLogin(void) {
 int id, fileId;
 char password[50], filePass[50];
 char buffer[100];
-int found = 0;
+int found = 0, hasCredential = 0;
+FILE *fp = fopen(MANAGER_FILE, "r");
+
+if (fp == NULL) {
+    return createManagerAccount();
+}
+
+while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+    if (parseManagerCredential(buffer, &fileId, filePass)) {
+        hasCredential = 1;
+        break;
+    }
+}
+if (ferror(fp)) {
+    fclose(fp);
+    printf("Unable to read %s\n", MANAGER_FILE);
+    return 0;
+}
+if (!hasCredential) {
+    fclose(fp);
+    return createManagerAccount();
+}
 
 while (!found) {
+    printf("\nManager Login\n");
+    printf("---------------------------------\n");
     id = readInt("Enter ID (0 to cancel): ", 0, MAX_ID);
     if (id == 0) {
+        fclose(fp);
         printf("Login cancelled\n");
         return 0;
     }
     readString("Enter password: ", password, sizeof(password));
 
-    FILE *fp = fopen("manager.txt", "r");
-    if (fp == NULL) {
-        printf("File error\n");
-        return 0;
-    }
-
+    rewind(fp);
     while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        if (sscanf(buffer, "%d %49s", &fileId, filePass) == 2
+        if (parseManagerCredential(buffer, &fileId, filePass)
             && id == fileId && strcmp(password, filePass) == 0) {
             found = 1;
             break;
         }
     }
-    fclose(fp);
 
     if (found)
         printf("Login Successful\n");
     else
         printf("Login Failed, check password or ID\n");
 }
+fclose(fp);
 return 1;
-
 }
 
 void managerLogout(void) {
 printf("Logout Successful\n");
 }
-
-// administrators//
 
 void addAdmin(void) {
 Admin list[MAX_ADMIN];
@@ -182,7 +223,6 @@ if (count >= MAX_ADMIN) {
     return;
 }
 
-/* ID: repeat until unique */
 do {
     duplicate = 0;
     newAdmin.id = readInt("Enter new admin ID: ", 1, MAX_ID);
@@ -195,7 +235,6 @@ do {
     }
 } while (duplicate);
 
-/* Name: spaces allowed, '|' is the file delimiter so it is rejected */
 do {
     readString("Enter name: ", newAdmin.name, sizeof(newAdmin.name));
     if (strchr(newAdmin.name, '|') != NULL) {
@@ -203,7 +242,6 @@ do {
     }
 } while (strchr(newAdmin.name, '|') != NULL);
 
-/* Password */
 do {
     readString("Enter password: ", newAdmin.password, sizeof(newAdmin.password));
     if (strchr(newAdmin.password, '|') != NULL) {
@@ -211,13 +249,15 @@ do {
     }
 } while (strchr(newAdmin.password, '|') != NULL);
 
-newAdmin.status = 1;                      /* new admins start active */
+newAdmin.status = 1;
 
 list[count] = newAdmin;
 count++;
-saveAdmins(list, count);
-
-printf("Admin added successfully\n");
+if (saveAdmins(list, count)) {
+    printf("Admin added successfully\n");
+} else {
+    printf("Admin was not saved.\n");
+}
 
 }
 
@@ -227,41 +267,73 @@ char buffer[200];
 int count = 0;
 
 if (fp == NULL) {
-    return 0;                // no file yet = no records
+    return 0;
 }
 
 while (count < MAX_ADMIN && fgets(buffer, sizeof(buffer), fp) != NULL) {
-    if (sscanf(buffer, "%d|%49[^|]|%49[^|]|%d",
-               &list[count].id,
-               list[count].name,
-               list[count].password,
-               &list[count].status) == 4) {
+    char *firstSeparator;
+    char *secondSeparator;
+
+    buffer[strcspn(buffer, "\r\n")] = '\0';
+    firstSeparator = strchr(buffer, '|');
+    secondSeparator = firstSeparator ? strchr(firstSeparator + 1, '|') : NULL;
+
+    if (secondSeparator == NULL &&
+        sscanf(buffer, "%49[^|]|%29[^\r\n]",
+               list[count].name, list[count].password) == 2) {
+        int candidate = 1;
+        int duplicate;
+        do {
+            duplicate = 0;
+            for (int i = 0; i < count; i++) {
+                if (list[i].id == candidate) {
+                    duplicate = 1;
+                    candidate++;
+                    break;
+                }
+            }
+        } while (duplicate);
+        list[count].id = candidate;
+        list[count].status = 1;
+        count++;
+    } else if (secondSeparator != NULL &&
+               sscanf(buffer, "%d|%49[^|]|%29[^|]|%d",
+                      &list[count].id,
+                      list[count].name,
+                      list[count].password,
+                      &list[count].status) == 4) {
         count++;
     }
 }
 fclose(fp);
-return count;                // number of records loaded
+return count;
 
 }
 
-void saveAdmins(Admin list[], int count) {
+int saveAdmins(Admin list[], int count) {
 FILE *fp = fopen(ADMIN_FILE, "w");
 int i;
 
 if (fp == NULL) {
     printf("File error\n");
-    return;
+    return 0;
 }
 
 for (i = 0; i < count; i++) {
-    fprintf(fp, "%d|%s|%s|%d\n",
-            list[i].id, list[i].name, list[i].password, list[i].status);
+    if (fprintf(fp, "%d|%s|%s|%d\n",
+                list[i].id, list[i].name, list[i].password, list[i].status) < 0) {
+        fclose(fp);
+        printf("File error\n");
+        return 0;
+    }
 }
-fclose(fp);
-
+if (fclose(fp) != 0) {
+    printf("File error\n");
+    return 0;
+}
+return 1;
 }
 
-// Prints a table of administrators (passwords are not shown).
 void printAdminTable(Admin list[], int count) {
 int i;
 
@@ -339,28 +411,46 @@ id = readInt("Enter admin ID to update: ", 1, MAX_ID);
 
 for (i = 0; i < count; i++) {
     if (list[i].id == id) {
-        list[i].status = !list[i].status;
+        if (!list[i].status) {
+            printf("Admin %d is already not active.\n", id);
+            return;
+        }
+        list[i].status = 0;
         found = 1;
         break;
     }
 }
 
 if (found) {
-    saveAdmins(list, count);
-    printf("Admin %d is now %s\n", id, list[i].status ? "Active" : "Not active");
+    if (saveAdmins(list, count)) {
+        printf("Admin %d is now Not active\n", id);
+    } else {
+        printf("Admin status was not saved.\n");
+    }
 } else {
     printf("Admin not found\n");
 }
 
 }
 
-//staff report//
-
-// File format: id|name|password|status
-// Appends records to list starting at index count, returns new count.
 int loadStaffFile(const char *filename, const char *role, Staff list[], int count) {
+if (strcmp(role, "Administrator") == 0) {
+    Admin admins[MAX_ADMIN];
+    int adminCount = loadAdmins(admins);
+
+    for (int i = 0; i < adminCount && count < MAX_STAFF; i++) {
+        snprintf(list[count].id, sizeof(list[count].id), "%d", admins[i].id);
+        strcpy(list[count].name, admins[i].name);
+        strcpy(list[count].role, role);
+        strcpy(list[count].status, admins[i].status ? "active" : "not active");
+        count++;
+    }
+    return count;
+}
+
 FILE *fp = fopen(filename, "r");
-char buffer[200];
+char buffer[300];
+char password[30], contact[30];
 
 if (fp == NULL) {
     printf("Cannot open %s\n", filename);
@@ -368,10 +458,13 @@ if (fp == NULL) {
 }
 
 while (count < MAX_STAFF && fgets(buffer, sizeof(buffer), fp) != NULL) {
-    if (sscanf(buffer, "%d|%49[^|]|%*[^|]|%d",
-               &list[count].id,
+    buffer[strcspn(buffer, "\r\n")] = '\0';
+    if (sscanf(buffer, "%19[^|]|%49[^|]|%29[^|]|%29[^|]|%19[^\r\n]",
+               list[count].id,
                list[count].name,
-               &list[count].status) == 3) {
+               password,
+               contact,
+               list[count].status) == 5) {
         strcpy(list[count].role, role);
         count++;
     }
@@ -391,24 +484,23 @@ return count;
 void printStaffList(Staff list[], int count) {
 int i, admins = 0, instructors = 0;
 
-if (count == 0) {
-    printf("No records found.\n");
-    return;
-}
-
-printf("\n%-8s %-25s %-15s %s\n", "ID", "Name", "Role", "Status");
+printf("\n%-12s %-25s %-15s %s\n", "ID", "Name", "Role", "Status");
 printf("------------------------------------------------------------\n");
 
 for (i = 0; i < count; i++) {
-    printf("%-8d %-25s %-15s %s\n",
+    printf("%-12s %-25s %-15s %s\n",
            list[i].id, list[i].name, list[i].role,
-           list[i].status ? "Active" : "Not active");
+           list[i].status);
 
     if (strcmp(list[i].role, "Administrator") == 0) {
         admins++;
-    } else {
+    } else if (strcmp(list[i].role, "Instructor") == 0) {
         instructors++;
     }
+}
+
+if (count == 0) {
+    printf("No records found.\n");
 }
 
 printf("------------------------------------------------------------\n");
@@ -418,7 +510,6 @@ printf("Total staff:          %d\n", count);
 
 }
 
-// Case-insensitive check
 int containsIgnoreCase(const char *text, const char *key) {
 char t[100], k[100];
 int i;
@@ -492,12 +583,13 @@ void staffReportMenu(void) {
 int choice;
 
 do {
-    printf("\n--- Staff Report ---\n");
+    printf("\nStaff Report");
+    printf("\n---------------------------------\n");
     printf("1. View all staff\n");
     printf("2. Filter by role\n");
     printf("3. Search by name\n");
-    printf("4. Back\n");
-    choice = readInt("Enter choice: ", 1, 4);
+    printf("4. Back to Manager Menu\n");
+    choice = readInt("\nEnter choice (1-4): ", 1, 4);
 
     switch (choice) {
         case 1: viewStaffReport();
@@ -513,28 +605,24 @@ do {
 
 }
 
-/* ---------- revenue report ---------- */
-
-// File format per line: regId|classId|day|month|year|fee
-// Example: 3001|12|15|3|2026|80.00
 int loadRegistrations(Registration list[]) {
-FILE *fp = fopen(REG_FILE, "r");
+FILE *fp = fopen(PAYMENT_FILE, "r");
 char buffer[200];
 int count = 0;
 
 if (fp == NULL) {
-    printf("Cannot open %s\n", REG_FILE);
-    return 0;
+    printf("Cannot open %s\n", PAYMENT_FILE);
+    return -1;
 }
 
 while (count < MAX_REG && fgets(buffer, sizeof(buffer), fp) != NULL) {
-    if (sscanf(buffer, "%d|%d|%d|%d|%d|%lf",
-               &list[count].regId,
+    if (sscanf(buffer, "%19[^|]|%d|%lf|%d/%d/%d",
+               list[count].studentId,
                &list[count].classId,
+               &list[count].fee,
                &list[count].day,
                &list[count].month,
-               &list[count].year,
-               &list[count].fee) == 6) {
+               &list[count].year) == 6) {
         count++;
     }
 }
@@ -549,6 +637,10 @@ int count = loadRegistrations(list);
 int month, year, i, registrations = 0;
 double total = 0;
 
+if (count < 0) {
+    return;
+}
+
 month = readInt("Enter month (1-12): ", 1, 12);
 year = readInt("Enter year: ", 2000, 2100);
 
@@ -560,8 +652,8 @@ for (i = 0; i < count; i++) {
 }
 
 printf("\n===== MONTHLY REVENUE REPORT (%02d/%d) =====\n", month, year);
-printf("Class registrations: %d\n", registrations);
-printf("Total revenue:       RM %.2f\n", total);
+printf("Paid class registrations: %d\n", registrations);
+printf("Total revenue:            RM %.2f\n", total);
 
 }
 
@@ -570,6 +662,10 @@ Registration list[MAX_REG];
 int count = loadRegistrations(list);
 int year, i, registrations = 0;
 double total = 0;
+
+if (count < 0) {
+    return;
+}
 
 year = readInt("Enter year: ", 2000, 2100);
 
@@ -581,8 +677,8 @@ for (i = 0; i < count; i++) {
 }
 
 printf("\n===== YEARLY REVENUE REPORT (%d) =====\n", year);
-printf("Class registrations: %d\n", registrations);
-printf("Total revenue:       RM %.2f\n", total);
+printf("Paid class registrations: %d\n", registrations);
+printf("Total revenue:            RM %.2f\n", total);
 
 }
 
@@ -590,11 +686,12 @@ void revenueReportMenu(void) {
 int choice;
 
 do {
-    printf("\n--- Revenue Report ---\n");
+    printf("\nRevenue Report");
+    printf("\n---------------------------------\n");
     printf("1. Monthly revenue\n");
     printf("2. Yearly revenue\n");
-    printf("3. Back\n");
-    choice = readInt("Enter choice: ", 1, 3);
+    printf("3. Back to Manager Menu\n");
+    choice = readInt("\nEnter choice (1-3): ", 1, 3);
 
     switch (choice) {
         case 1: viewMonthlyRevenue();

@@ -397,17 +397,53 @@ int viewPaymentRecords(void) {
 }
 
 int administratorLogin(void) {
-    char user[30], pass[30];
+    char name[50], pass[30];
+    char line[150], storedID[20], storedName[50], storedPass[30], status[20];
     int attempts = 3;
-    while (attempts > 0) {
-        inputLine("\n===== Administrator Login =====\nUsername: ", user, sizeof(user));
-        inputLine("Password: ", pass, sizeof(pass));
-        if (strcmp(user, "Alexander") == 0 && !strcmp(pass, "admin123")) {
-            printf("\nLogin successful. Welcome, Administrator!\n");
-            return 1;
-        }
-        printf("\nInvalid username or password. Attempts left: %d\n", --attempts);
+    FILE *fp = fopen("Text_Files/admin.txt", "r");
+
+    if (fp == NULL) {
+        printf("\nUnable to open Text_Files/admin.txt.\n");
+        return 0;
     }
+
+    while (attempts > 0) {
+        int inactiveMatch = 0;
+        inputLine("\n===== Administrator Login =====\nName: ", name, sizeof(name));
+        inputLine("Password: ", pass, sizeof(pass));
+
+        rewind(fp);
+        while (fgets(line, sizeof(line), fp) != NULL) {
+            trim(line);
+            if (sscanf(line, "%19[^|]|%49[^|]|%29[^|]|%19[^\r\n]",
+                       storedID, storedName, storedPass, status) == 4) {
+                if (strcmp(name, storedName) == 0 &&
+                    strcmp(pass, storedPass) == 0) {
+                    if (strcmp(status, "1") == 0) {
+                        fclose(fp);
+                        printf("\nLogin successful. Welcome, %s!\n", storedName);
+                        return 1;
+                    }
+                    inactiveMatch = 1;
+                }
+            } else if (sscanf(line, "%49[^|]|%29[^\r\n]",
+                              storedName, storedPass) == 2 &&
+                       strcmp(name, storedName) == 0 &&
+                       strcmp(pass, storedPass) == 0) {
+                fclose(fp);
+                printf("\nLogin successful. Welcome, %s!\n", storedName);
+                return 1;
+            }
+        }
+        if (inactiveMatch) {
+            printf("\nThis administrator account is not active.\n");
+        } else {
+            printf("\nInvalid name or password.\n");
+        }
+        printf("Attempts left: %d\n", --attempts);
+    }
+
+    fclose(fp);
     printf("\nToo many failed attempts. Returning to main menu.\n");
     return 0;
 }

@@ -8,19 +8,19 @@
 typedef struct {
 int id;
 char name[50];
-char password[50];
+char password[30];
 int status;          
 } Admin;
 
 typedef struct {
-int id;
+char id[20];
 char name[50];
 char role[20];       
-int status;          
+char status[20];
 } Staff;
 
 typedef struct {
-int regId;
+char studentId[20];
 int classId;
 int day;
 int month;
@@ -35,7 +35,7 @@ int managerLogin(void);
 void managerLogout(void);
 
 int loadAdmins(Admin list[]);
-void saveAdmins(Admin list[], int count);
+int saveAdmins(Admin list[], int count);
 void addAdmin(void);
 void printAdminTable(Admin list[], int count);
 void viewAdmins(void);

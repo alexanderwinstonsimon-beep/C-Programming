@@ -15,14 +15,15 @@ To address these challenges, SDA has appointed you to develop a **Self Defence A
 ## User Roles & Functional Requirements
 
 ### 🧑‍💼 Manager
-* **Authentication:** Login and logout from the system.
+* **Authentication:** Login and logout. On first use, set a Manager ID and password; store them in `Text_Files/manager.txt`.
 * **Manage Administrator (Add, View, Search, Update):** 
   * Add new administrator accounts.
   * Search for existing administrators by name or ID.
   * View administrator details.
   * Update administrator status from `'active'` to `'not active'`.
+  * Legacy `name|password` records are treated as active and assigned numeric IDs in file order; Manager saves them as `ID|name|password|status`.
 * **Staff Report (View, Search):** View details for administrators and instructors, with filtering capabilities by role and name, alongside total counts for each role.
-* **Revenue Report (View, Search):** View and filter monthly or yearly revenue reports, including the total number of class registrations and overall revenue.
+* **Revenue Report (View, Search):** View monthly or yearly paid class registrations and totals from `Text_Files/payments.txt`, grouped by payment date.
 
 ### 💻 Administrator
 * **Authentication:** Login and logout from the system.
